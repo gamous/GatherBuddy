@@ -1,11 +1,11 @@
 name: GatherBuddy
 author: Ottermandias
 description: |-
-  Adds commands to simplify gathering by finding nodes and fish and their locations
-  via item name and a UI to keep track of special uptime and weather conditions.
-punchline: Simplify Gathering and Fishing.
+  添加可以通过物品名称查找采集点的命令来简化采集，
+  并提供一个UI来持续追踪可采集时间窗口与天气条件。
+punchline: 改善采集与钓鱼体验。
 repo_url: https://github.com/Ottermandias/GatherBuddy
-dalamud_api_level: 7
+dalamud_api_level: 6
 tags:
   - Gathering
   - Fishing

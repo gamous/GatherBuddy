@@ -63,14 +63,14 @@ public partial class FishTimerWindow : Window
             ColorId.FishTimerBackground.Value(), Rounding);
         ImGui.GetWindowDrawList().AddRect(_windowPos, _windowPos + _windowSize, ColorId.FishTimerMarkersAll.Value(), Rounding);
         ImGui.SetCursorPosY((_windowSize.Y - 6 * ImGui.GetTextLineHeightWithSpacing()) / 2);
-        DrawCenteredText(_windowSize.X, "FISH");
+        DrawCenteredText(_windowSize.X, "钓鱼");
         ImGui.SetCursorPosY((_windowSize.Y - 4 * ImGui.GetTextLineHeightWithSpacing()) / 2);
-        DrawCenteredText(_windowSize.X, "TIMER");
-        DrawCenteredText(_windowSize.X, "\nDisable \"Edit Fish Timer\"");
-        DrawCenteredText(_windowSize.X, "in /GatherBuddy -> Config");
-        DrawCenteredText(_windowSize.X, "-> Interface -> Fish Timer Window");
-        DrawCenteredText(_windowSize.X, "to enable actual functionality");
-        DrawCenteredText(_windowSize.X, "and hide this when not fishing.");
+        DrawCenteredText(_windowSize.X, "计时器");
+        DrawCenteredText(_windowSize.X, "\n在 /GatherBuddy ->");
+        DrawCenteredText(_windowSize.X, " 配置-> 界面 -> 钓鱼计时器");
+        DrawCenteredText(_windowSize.X, "中禁用 \"编辑钓鱼计时器\"");
+        DrawCenteredText(_windowSize.X, "来启用实际的功能");
+        DrawCenteredText(_windowSize.X, "并在不钓鱼的时隐藏窗口。");
     }
 
     private void DrawProgressLine()
@@ -124,7 +124,7 @@ public partial class FishTimerWindow : Window
         {
             case 0: return;
             case -1:
-                var text = "Elapsed Time";
+                var text = "计时";
                 ImGui.SameLine(_windowSize.X - ImGui.CalcTextSize(text).X - offset);
                 ImGui.Text(text);
                 return;
@@ -222,12 +222,12 @@ public partial class FishTimerWindow : Window
         _windowSize = new Vector2(ImGui.GetWindowSize().X, _maxListHeight);
         if (GatherBuddy.Config.FishTimerEdit)
         {
-            DrawTextHeader("Bait", "Place", -1);
+            DrawTextHeader("鱼饵", "钓场", -1);
             DrawEditModeTimer();
         }
         else
         {
-            DrawTextHeader(_recorder.Record.Bait.Name, _spot?.Name ?? "Unknown", _milliseconds);
+            DrawTextHeader(_recorder.Record.Bait.Name, _spot?.Name ?? "未知", _milliseconds);
             DrawSecondLines();
             foreach (var fish in _availableFish)
                 fish.Draw(this);

@@ -27,3 +27,33 @@ public enum ItemFilter
 
     All = 0x071FFF,
 }
+public static class ItemFilterExtension
+{
+    public static string ToName(this ItemFilter type)
+    {
+        return type switch
+        {
+            ItemFilter.Logging    => "采伐",
+            ItemFilter.Harvesting => "割草",
+            ItemFilter.Mining     => "采掘",
+            ItemFilter.Quarrying  => "碎石",
+
+            ItemFilter.Regular   => "常规",
+            ItemFilter.Ephemeral => "限时",
+            ItemFilter.Unspoiled => "全新",
+            ItemFilter.Legendary => "传说",
+
+
+            ItemFilter.ARealmReborn   => "重生之境",
+            ItemFilter.Heavensward    => "苍穹之禁城",
+            ItemFilter.Stormblood     => "红莲之狂潮",
+            ItemFilter.Shadowbringers => "暗影之逆焰",
+            ItemFilter.Endwalker      => "晓月之终途",
+
+            ItemFilter.Available    => "可采集",
+            ItemFilter.Unavailable  => "不可采",
+
+            _ => "未知",
+        };
+    }
+}

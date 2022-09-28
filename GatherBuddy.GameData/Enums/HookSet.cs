@@ -18,13 +18,13 @@ public static class HookSetExtensions
     public static string ToName(this HookSet value)
         => value switch
         {
-            HookSet.Unknown    => "Unknown",
-            HookSet.Precise    => "Precise",
-            HookSet.Powerful   => "Powerful",
-            HookSet.Hook       => "Regular",
-            HookSet.DoubleHook => "Double",
-            HookSet.TripleHook => "Triple",
-            HookSet.None       => "None",
-            _                  => "Invalid",
+            HookSet.Unknown    => "未知",
+            HookSet.Precise    => "精准提钩",
+            HookSet.Powerful   => "强力提钩",
+            HookSet.Hook       => "普通提钩",
+            HookSet.DoubleHook => "双重提钩",
+            HookSet.TripleHook => "三重提钩",
+            HookSet.None       => "暂无数据",
+            _                  => "错误数据",
         };
 }

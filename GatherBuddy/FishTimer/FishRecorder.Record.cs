@@ -76,12 +76,12 @@ public partial class FishRecorder
     }
 
     private static readonly uint GatheringIdx =
-        Dalamud.GameData.GetExcelSheet<BaseParam>(ClientLanguage.English)?
+        Dalamud.GameData.GetExcelSheet<BaseParam>(ClientLanguage.ChineseSimplified)?
             .FirstOrDefault(r => r.Name == "Gathering")?.RowId
      ?? 72;
 
     private static readonly uint PerceptionIdx =
-        Dalamud.GameData.GetExcelSheet<BaseParam>(ClientLanguage.English)?
+        Dalamud.GameData.GetExcelSheet<BaseParam>(ClientLanguage.ChineseSimplified)?
             .FirstOrDefault(r => r.Name == "Perception")?.RowId
      ?? 73;
 
@@ -175,7 +175,7 @@ public partial class FishRecorder
             Record.Flags |= FishRecord.Effects.Collectible;
         PluginLog.Verbose("Caught {Amount} {Large:l}{Collectible:l}{Fish:l} of size {Size:F1}.",
             amount, large ? "large " : string.Empty, collectible ? "collectible " : string.Empty,
-            Record.Catch.Name[ClientLanguage.English], size / 10f);
+            Record.Catch.Name[ClientLanguage.ChineseSimplified], size / 10f);
     }
 
     private void OnMooch()

@@ -7,6 +7,7 @@ public static partial class Fish
     // @formatter:off
     private static void ApplyBuriedMemory(this GameData data)
     {
+        /*
         data.Apply(37697, Patch.BuriedMemory) // Mayashell
             .Bait(data, 36591, 36447)
             .Bite(HookSet.Powerful, BiteType.Strong)
@@ -57,6 +58,7 @@ public static partial class Fish
            .Bait(data, 29717, 36478)
            .Bite(HookSet.Powerful, BiteType.Legendary)
            .Weather(data, 49);
+        */
     }
     // @formatter:on
 }

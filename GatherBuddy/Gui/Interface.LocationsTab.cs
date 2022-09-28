@@ -40,15 +40,15 @@ public partial class Interface
             _typeColumnWidth      = Enum.GetValues<GatheringType>().Max(t => TextWidth(t.ToString())) / ImGuiHelpers.GlobalScale;
         }
 
-        private static readonly NameColumn      _nameColumn      = new() { Label = "Name" };
-        private static readonly TypeColumn      _typeColumn      = new() { Label = "Type" };
-        private static readonly TerritoryColumn _territoryColumn = new() { Label = "Territory" };
-        private static readonly AetheryteColumn _aetheryteColumn = new() { Label = "Aetheryte" };
-        private static readonly XCoordColumn    _xCoordColumn    = new() { Label = "X-Coord" };
-        private static readonly YCoordColumn    _yCoordColumn    = new() { Label = "Y-Coord" };
-        private static readonly RadiusColumn    _radiusColumn    = new() { Label = "Radius" };
-        private static readonly MarkerColumn    _markerColumn    = new() { Label = "Markers" };
-        private static readonly ItemColumn      _itemColumn      = new() { Label = "Items" };
+        private static readonly NameColumn      _nameColumn      = new() { Label = "地点名称" };
+        private static readonly TypeColumn      _typeColumn      = new() { Label = "类型" };
+        private static readonly TerritoryColumn _territoryColumn = new() { Label = "地图" };
+        private static readonly AetheryteColumn _aetheryteColumn = new() { Label = "以太之光" };
+        private static readonly XCoordColumn    _xCoordColumn    = new() { Label = "X轴坐标" };
+        private static readonly YCoordColumn    _yCoordColumn    = new() { Label = "Y轴坐标" };
+        private static readonly RadiusColumn    _radiusColumn    = new() { Label = "范围" };
+        private static readonly MarkerColumn    _markerColumn    = new() { Label = "场景标点" };
+        private static readonly ItemColumn      _itemColumn      = new() { Label = "物品列表" };
 
         private sealed class NameColumn : ColumnString<ILocation>
         {
@@ -70,9 +70,14 @@ public partial class Interface
 
         private sealed class TypeColumn : ColumnFlags<JobFlags, ILocation>
         {
+            private JobFlags[] FlagValues = Array.Empty<JobFlags>();
+            private string[] FlagNames = Array.Empty<string>();
+            protected sealed override string[] Names => FlagNames;
             public TypeColumn()
             {
-                AllFlags = Enum.GetValues<JobFlags>().Aggregate((a, b) => a | b);
+                FlagValues = Enum.GetValues<JobFlags>();
+                AllFlags = FlagValues.Aggregate((a, b) => a | b);
+                FlagNames = FlagValues.Select(f => f.ToName()).ToArray();
             }
 
             public override JobFlags FilterValue
@@ -93,7 +98,7 @@ public partial class Interface
             public override void DrawColumn(ILocation location, int _)
             {
                 ImGui.AlignTextToFramePadding();
-                ImGui.Text(location.GatheringType.ToString());
+                ImGui.Text(location.GatheringType.ToName());
             }
 
             public override int Compare(ILocation a, ILocation b)
@@ -162,7 +167,7 @@ public partial class Interface
             }
 
             public override string ToName(ILocation location)
-                => location.ClosestAetheryte?.Name ?? "None";
+                => location.ClosestAetheryte?.Name ?? "暂无";
 
             public override float Width
                 => _aetheryteColumnWidth * ImGuiHelpers.GlobalScale;
@@ -171,12 +176,12 @@ public partial class Interface
             {
                 var       overwritten = location.DefaultAetheryte != location.ClosestAetheryte;
                 using var color       = ImRaii.PushColor(ImGuiCol.FrameBg, ColorId.ChangedLocationBg.Value(), overwritten);
-                var       currentName = location.ClosestAetheryte?.Name ?? "None";
+                var       currentName = location.ClosestAetheryte?.Name ?? "暂无";
                 if (_aetheryteCombo.Draw(currentName, out var newIdx))
                     _plugin.LocationManager.SetAetheryte(location, _aetherytes[newIdx]);
                 if (overwritten)
                 {
-                    ImGuiUtil.HoverTooltip($"Right-click to restore default. ({location.DefaultAetheryte?.Name ?? "None"})");
+                    ImGuiUtil.HoverTooltip($"右键恢复默认值。 ({location.DefaultAetheryte?.Name ?? "暂无"})");
                     if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
                         _plugin.LocationManager.SetAetheryte(location, location.DefaultAetheryte);
                 }
@@ -201,7 +206,7 @@ public partial class Interface
                     _plugin.LocationManager.SetXCoord(location, (int)(x * 100f + 0.5f));
                 if (overwritten)
                 {
-                    ImGuiUtil.HoverTooltip($"Right-click to restore default. ({location.DefaultXCoord / 100f:0.00})");
+                    ImGuiUtil.HoverTooltip($"右键恢复默认值。 ({location.DefaultXCoord / 100f:0.00})");
                     if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
                         _plugin.LocationManager.SetXCoord(location, location.DefaultXCoord);
                 }
@@ -229,7 +234,7 @@ public partial class Interface
                     _plugin.LocationManager.SetYCoord(location, (int)(y * 100f + 0.5f));
                 if (overwritten)
                 {
-                    ImGuiUtil.HoverTooltip($"Right-click to restore default. ({location.DefaultYCoord / 100f:0.00})");
+                    ImGuiUtil.HoverTooltip($"右键恢复默认值。 ({location.DefaultYCoord / 100f:0.00})");
                     if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
                         _plugin.LocationManager.SetYCoord(location, location.DefaultYCoord);
                 }
@@ -257,7 +262,7 @@ public partial class Interface
                     _plugin.LocationManager.SetRadius(location, Math.Clamp((ushort)radius, (ushort)0, IMarkable.RadiusMax));
                 if (overwritten)
                 {
-                    ImGuiUtil.HoverTooltip($"Right-click to restore default. ({location.DefaultRadius})");
+                    ImGuiUtil.HoverTooltip($"右键恢复默认值。 ({location.DefaultRadius})");
                     if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
                         _plugin.LocationManager.SetRadius(location, location.DefaultRadius);
                 }
@@ -325,13 +330,13 @@ public partial class Interface
                 using var _ = ImRaii.PushId(id);
                 var markers = GatherBuddy.WaymarkManager.GetWaymarks();
                 var invalid = Dalamud.ClientState.TerritoryType != location.Territory.Id;
-                var tt = invalid ? "Not in the correct zone for this location." :
-                    markers.Count == 0 ? "No markers set that could be stored for this location." :
-                                         $"Store the currently placed markers for this location:\n\n{string.Join("\n", markers.Select(m => $"{m.X:F2} - {m.Y:F2} - {m.Z:F2}"))}";
+                var tt = invalid ? "当前不在该地点。" :
+                    markers.Count == 0 ? "当前没有可用于存储到该地点的场地标点。" :
+                                         $"存储当前场地标点到该采集点:\n\n{string.Join("\n", markers.Select(m => $"{m.X:F2} - {m.Y:F2} - {m.Z:F2}"))}";
 
                 if (location.Markers.Length > 0)
                     tt +=
-                        $"\n\nMarkers stored for this location:\n\n{string.Join("\n", location.Markers.Select(m => $"{m.X:F2} - {m.Y:F2} - {m.Z:F2}"))}";
+                        $"\n\n存储到该地点的场地标点:\n\n{string.Join("\n", location.Markers.Select(m => $"{m.X:F2} - {m.Y:F2} - {m.Z:F2}"))}";
 
                 if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Map.ToIconString(), new Vector2(ImGui.GetFrameHeight()), tt,
                         markers.Count == 0 || invalid, true))
@@ -339,8 +344,8 @@ public partial class Interface
 
                 ImGui.SameLine();
                 tt = location.Markers.Length == 0
-                    ? "No markers stored for this location."
-                    : $"Remove the stored markers for this location:\n\n{string.Join("\n", location.Markers.Select(m => $"{m.X:F2} - {m.Y:F2} - {m.Z:F2}"))}";
+                    ? "没有存储到该地点的场地标点。"
+                    : $"移除存储到该地点的场地标点:\n\n{string.Join("\n", location.Markers.Select(m => $"{m.X:F2} - {m.Y:F2} - {m.Z:F2}"))}";
                 if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), new Vector2(ImGui.GetFrameHeight()), tt,
                         location.Markers.Length == 0, true))
                     _plugin.LocationManager.SetMarkers(location, Array.Empty<Vector3>());
@@ -358,9 +363,9 @@ public partial class Interface
     private void DrawLocationsTab()
     {
         using var id  = ImRaii.PushId("Locations");
-        using var tab = ImRaii.TabItem("Locations");
-        ImGuiUtil.HoverTooltip("Default locations getting you down?\n"
-          + "Set up custom aetherytes or map marker locations for specific nodes.");
+        using var tab = ImRaii.TabItem("地点");
+        ImGuiUtil.HoverTooltip("默认的地点位置让你出糗了?\n"
+          + "为特定采集地点设置自定义的传送点和场地标点。");
 
         if (!tab)
             return;

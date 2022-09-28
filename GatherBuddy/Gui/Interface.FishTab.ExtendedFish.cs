@@ -74,7 +74,7 @@ public partial class Interface
         public bool          UptimeDependency;
         public ushort        UptimePercent;
         public bool          Unlocked = false;
-        public bool          Collectible;
+        public bool Collectible;
 
         public (ILocation, TimeInterval) Uptime
             => GatherBuddy.UptimeManager.BestLocation(Data);
@@ -135,7 +135,7 @@ public partial class Interface
                 {
                     new()
                     {
-                        Name    = string.Intern($"{fish.Size.ToName()} and {fish.Speed.ToName()}"),
+                        Name    = string.Intern($"{fish.Size.ToName()}鱼 {fish.Speed.ToName()}"),
                         Fish    = null,
                         Icon    = IconId.FromSize(fish.Size),
                         Bite    = Bites.Unknown,
@@ -227,9 +227,9 @@ public partial class Interface
             var minutes = intuition / RealTime.SecondsPerMinute;
             var seconds = intuition % RealTime.SecondsPerMinute;
             if (seconds == 0)
-                return minutes == 1 ? "Intuition for 1 Minute" : $"Intuition for {minutes} Minutes";
+                return minutes == 1 ? "渔人的直感持续 1 分钟" : $"I渔人的直感持续 {minutes} 分钟";
 
-            return $"Intuition for {minutes}:{seconds:D2} Minutes";
+            return $"渔人的直感持续  {minutes}:{seconds:D2} 分钟";
         }
 
         public ExtendedFish(Fish data)
@@ -247,15 +247,15 @@ public partial class Interface
                 data.FishingSpots.Where(f => f.ClosestAetheryte != null).Select(f => f.ClosestAetheryte!.Name).Distinct());
             if (!Aetherytes.Contains("\n"))
                 Aetherytes = '\0' + Aetherytes;
-            Patch = $"Patch {data.Patch.ToVersionString()}";
-            FishType = data.OceanFish ? string.Intern("Ocean Fish") :
-                data.IsSpearFish      ? string.Intern("Spearfishing") :
-                data.IsBigFish        ? string.Intern("Big Fish") : string.Intern("Regular Fish");
+            Patch = $"版本 {data.Patch.ToVersionString()}";
+            FishType = data.OceanFish ? string.Intern("海钓") :
+                data.IsSpearFish      ? string.Intern("刺鱼") :
+                data.IsBigFish        ? string.Intern("大鱼") : string.Intern("常规");
 
             Time = !data.FishRestrictions.HasFlag(FishRestrictions.Time)
-                ? string.Intern("Always Up")
+                ? string.Intern("总是可钓")
                 : data.Interval.AlwaysUp()
-                    ? string.Intern("Unknown Uptime")
+                    ? string.Intern("未知时间")
                     : data.Interval.PrintHours();
 
             UptimePercent = SetUptime(data);
@@ -279,35 +279,36 @@ public partial class Interface
         {
             if (!fish.Data.FishRestrictions.HasFlag(FishRestrictions.Weather))
             {
-                ImGuiUtil.DrawTextButton("No Weather Restrictions", Vector2.Zero, ColorId.HeaderWeather.Value());
+                ImGuiUtil.DrawTextButton("没有天气限制", Vector2.Zero, ColorId.HeaderWeather.Value());
                 return;
             }
 
             if (fish.WeatherIcons.Length == 0 && fish.TransitionIcons.Length == 0)
             {
-                ImGuiUtil.DrawTextButton("Unknown Weather Restrictions", Vector2.Zero, ColorId.HeaderWeather.Value());
+                ImGuiUtil.DrawTextButton("未知天气限制", Vector2.Zero, ColorId.HeaderWeather.Value());
                 return;
             }
 
             using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ImGui.GetStyle().ItemSpacing / 2);
             if (fish.TransitionIcons.Length > 0)
             {
-                AlignTextToSize(fish.TransitionIcons.Length > 1 ? "Requires one of" : "Requires", weatherIconSize);
+                AlignTextToSize(" 要求天气为", weatherIconSize);
                 style.Push(ImGuiStyleVar.ItemSpacing, Vector2.One * ImGuiHelpers.GlobalScale);
                 foreach (var w in fish.TransitionIcons)
                 {
                     ImGui.SameLine();
                     ImGui.Image(w.ImGuiHandle, weatherIconSize);
                 }
-
+                ImGui.SameLine();
+                AlignTextToSize(fish.TransitionIcons.Length > 1 ? "之一" : "", weatherIconSize);
                 style.Pop();
 
                 ImGui.SameLine();
-                AlignTextToSize(fish.WeatherIcons.Length > 1 ? "followed by one of" : "followed by", weatherIconSize);
+                AlignTextToSize("紧接着", weatherIconSize);
                 if (fish.WeatherIcons.Length == 0)
                 {
                     ImGui.SameLine();
-                    AlignTextToSize(" Anything", weatherIconSize);
+                    AlignTextToSize(" 任意其他天气", weatherIconSize);
                 }
                 else
                 {
@@ -317,17 +318,21 @@ public partial class Interface
                         ImGui.SameLine();
                         ImGui.Image(w.ImGuiHandle, weatherIconSize);
                     }
+                    ImGui.SameLine();
+                    AlignTextToSize(fish.WeatherIcons.Length > 1 ? "之一" : "", weatherIconSize);
                 }
             }
             else if (fish.WeatherIcons.Length > 0)
             {
-                AlignTextToSize(fish.WeatherIcons.Length > 1 ? "Requires one of" : "Requires", weatherIconSize);
+                AlignTextToSize(" 要求天气为", weatherIconSize);
                 style.Push(ImGuiStyleVar.ItemSpacing, Vector2.One * ImGuiHelpers.GlobalScale);
                 foreach (var w in fish.WeatherIcons)
                 {
                     ImGui.SameLine();
                     ImGui.Image(w.ImGuiHandle, weatherIconSize);
                 }
+                ImGui.SameLine();
+                AlignTextToSize(fish.WeatherIcons.Length > 1 ? "之一" : "", weatherIconSize);
             }
         }
 
@@ -335,7 +340,7 @@ public partial class Interface
         {
             if (fish.Bait.Length == 0)
             {
-                ImGuiUtil.DrawTextButton("Unknown Catch Method", Vector2.Zero, 0xFF0000A0);
+                ImGuiUtil.DrawTextButton("未知捕获方式", Vector2.Zero, 0xFF0000A0);
                 return;
             }
 

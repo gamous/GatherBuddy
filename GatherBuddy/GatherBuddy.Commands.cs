@@ -31,47 +31,47 @@ public partial class GatherBuddy
     {
         _commands["/gatherbuddy"] = new CommandInfo(OnGatherBuddy)
         {
-            HelpMessage = "Use to open the GatherBuddy interface.",
+            HelpMessage = "用来打开 GatherBuddy 的主界面。",
             ShowInHelp  = true,
         };
 
         _commands["/gather"] = new CommandInfo(OnGather)
         {
-            HelpMessage = "Mark the nearest node containing the item supplied, teleport to the nearest aetheryte, equip appropriate gear.\n"
-              + "You can use 'alarm' to gather the last triggered alarm or 'next' to gather the same item as before, but in the next-best location.",
+            HelpMessage = "标记提供某个物料的最近采集点，传送到最近的以太之光，装备对应的职业套装。\n"
+              + "你也可以使用 'alarm' 来采集最近触发闹钟的采集目标，或者 'next' 来采集与当前同样的采集目标，但在另一个可用的最佳采集点。",
             ShowInHelp = true,
         };
 
         _commands["/gatherbtn"] = new CommandInfo(OnGatherBtn)
         {
             HelpMessage =
-                "Mark the nearest botanist node containing the item supplied, teleport to the nearest aetheryte, equip appropriate gear.",
+                "标记提供某个物料的最近的园艺工采集点，传送到最近的以太之光，装备对应的职业套装。",
             ShowInHelp = true,
         };
 
         _commands["/gathermin"] = new CommandInfo(OnGatherMin)
         {
             HelpMessage =
-                "Mark the nearest miner node containing the item supplied, teleport to the nearest aetheryte, equip appropriate gear.",
+                "标记提供某个物料的最近的采矿工采集点，传送到最近的以太之光，装备对应的职业套装。",
             ShowInHelp = true,
         };
 
         _commands["/gatherfish"] = new CommandInfo(OnGatherFish)
         {
             HelpMessage =
-                "Mark the nearest fishing spot containing the fish supplied, teleport to the nearest aetheryte and equip fishing gear.",
+                "标记提供某个物料的最近的捕鱼人采集点，传送到最近的以太之光，装备对应的职业套装。",
             ShowInHelp = true,
         };
 
         _commands["/gathergroup"] = new CommandInfo(OnGatherGroup)
         {
-            HelpMessage = "Teleport to the node of a group corresponding to current time. Use /gathergroup for more details.",
+            HelpMessage = "传送到采集组在当前时间对应的可用采集点。使用 /gathergroup 了解详情。",
             ShowInHelp  = true,
         };
 
         _commands["/gbc"] = new CommandInfo(OnGatherBuddyShort)
         {
-            HelpMessage = "Some quick toggles for config options. Use without argument for help.",
+            HelpMessage = "一些快速的配置项切换。 不带参数使用时提供帮助信息。",
             ShowInHelp  = true,
         };
 
@@ -99,7 +99,7 @@ public partial class GatherBuddy
     private void OnGather(string command, string arguments)
     {
         if (arguments.Length == 0)
-            Communicator.NoItemName(command, "item");
+            Communicator.NoItemName(command, "物料");
         else
             Executor.GatherItemByName(arguments);
     }
@@ -107,7 +107,7 @@ public partial class GatherBuddy
     private void OnGatherBtn(string command, string arguments)
     {
         if (arguments.Length == 0)
-            Communicator.NoItemName(command, "item");
+            Communicator.NoItemName(command, "物料");
         else
             Executor.GatherItemByName(arguments, GatheringType.Botanist);
     }
@@ -115,7 +115,7 @@ public partial class GatherBuddy
     private void OnGatherMin(string command, string arguments)
     {
         if (arguments.Length == 0)
-            Communicator.NoItemName(command, "item");
+            Communicator.NoItemName(command, "物料");
         else
             Executor.GatherItemByName(arguments, GatheringType.Miner);
     }
@@ -123,7 +123,7 @@ public partial class GatherBuddy
     private void OnGatherFish(string command, string arguments)
     {
         if (arguments.Length == 0)
-            Communicator.NoItemName(command, "fish");
+            Communicator.NoItemName(command, "鱼类");
         else
             Executor.GatherFishByName(arguments);
     }
@@ -197,14 +197,14 @@ public partial class GatherBuddy
                 Config.MainWindowLockResize   = false;
                 break;
             default:
-                var shortHelpString = new SeStringBuilder().AddText("Use ").AddColoredText(command, Config.SeColorCommands)
-                    .AddText(" with one of the following arguments:\n")
-                    .AddColoredText("        window", Config.SeColorArguments).AddText(" - Toggle the Gather Window on or off.\n")
-                    .AddColoredText("        alarm",  Config.SeColorArguments).AddText(" - Toggle Alarms on or off.\n")
-                    .AddColoredText("        spear",  Config.SeColorArguments).AddText(" - Toggle the Spearfishing Helper on or off.\n")
-                    .AddColoredText("        fish",   Config.SeColorArguments).AddText(" - Toggle the Fish Timer window on or off.\n")
-                    .AddColoredText("        edit",   Config.SeColorArguments).AddText(" - Toggle edit mode for the fish timer.\n")
-                    .AddColoredText("        unlock", Config.SeColorArguments).AddText(" - Unlock the main window position and size.")
+                var shortHelpString = new SeStringBuilder().AddText("指令").AddColoredText(command, Config.SeColorCommands)
+                    .AddText(" 可用参数:\n")
+                    .AddColoredText("        window", Config.SeColorArguments).AddText(" - 切换采集窗的开关。\n")
+                    .AddColoredText("        alarm",  Config.SeColorArguments).AddText(" - 切换闹钟的开关。\n")
+                    .AddColoredText("        spear",  Config.SeColorArguments).AddText(" - 切换刺鱼辅助的开关。\n")
+                    .AddColoredText("        fish",   Config.SeColorArguments).AddText(" - 切换钓鱼计时器的开关。\n")
+                    .AddColoredText("        edit",   Config.SeColorArguments).AddText(" - 切换钓鱼计时器的可编辑模式。\n")
+                    .AddColoredText("        unlock", Config.SeColorArguments).AddText(" - 解锁主窗口的位置和大小。")
                     .BuiltString;
                 Communicator.Print(shortHelpString);
                 return;

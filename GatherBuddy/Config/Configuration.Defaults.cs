@@ -10,8 +10,8 @@ public partial class Configuration
 {
     public static readonly VirtualKey[] ValidKeys = Dalamud.Keys.GetValidVirtualKeys().Prepend(VirtualKey.NO_KEY).ToArray();
 
-    public const string DefaultIdentifiedGatherableFormat = "Identified {Item} for \"{Input}\".";
-    public const string DefaultAlarmFormat                = "{Alarm} {Item} {DelayString} at {Location}.";
+    public const string DefaultIdentifiedGatherableFormat = "通过\"{Input}\"检索到 {Item}。";
+    public const string DefaultAlarmFormat                = "{Alarm} {Item} {DelayString} 在 {Location}.";
 
     public static readonly Dictionary<int, uint> ForegroundColors = Dalamud.GameData.GetExcelSheet<UIColor>()!
         .Where(c => (c.UIForeground & 0xFF) > 0)

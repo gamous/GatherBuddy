@@ -18,6 +18,22 @@ public enum GatheringType : byte
 
 public static class GatheringTypeExtension
 {
+    public static string ToName (this GatheringType type){
+        return type switch
+        {
+            GatheringType.Mining       => "采掘",
+            GatheringType.Quarrying    => "碎石",
+            GatheringType.Logging      => "采伐",
+            GatheringType.Harvesting   => "割草",
+            GatheringType.Spearfishing => "刺鱼",
+            GatheringType.Miner        => "采矿工",
+            GatheringType.Botanist     => "园艺工",
+            GatheringType.Fisher       => "钓鱼",
+            GatheringType.Multiple     => "共有",
+            _                          => "未知",
+        };
+    }
+
     public static GatheringType ToGroup(this GatheringType type)
     {
         return type switch

@@ -49,18 +49,18 @@ public partial class Interface
         }
 
         private static readonly ContentIdHeader  _contentIdHeader  = new() { Label = "Content ID" };
-        private static readonly BaitHeader       _baitHeader       = new() { Label = "Bait" };
-        private static readonly SpotHeader       _spotHeader       = new() { Label = "Fishing Spot" };
-        private static readonly CatchHeader      _catchHeader      = new() { Label = "Caught Fish" };
-        private static readonly CastStartHeader  _castStartHeader  = new() { Label = "TimeStamp" };
-        private static readonly BiteTypeHeader   _biteTypeHeader   = new() { Label = "Tug" };
-        private static readonly HookHeader       _hookHeader       = new() { Label = "Hookset" };
-        private static readonly DurationHeader   _durationHeader   = new() { Label = "Bite" };
-        private static readonly GatheringHeader  _gatheringHeader  = new() { Label = "Gath." };
-        private static readonly PerceptionHeader _perceptionHeader = new() { Label = "Perc." };
-        private static readonly AmountHeader     _amountHeader     = new() { Label = "Amt" };
-        private static readonly SizeHeader       _sizeHeader       = new() { Label = "Ilm" };
-        private static readonly FlagHeader       _flagHeader       = new() { Label = "Flags" };
+        private static readonly BaitHeader       _baitHeader       = new() { Label = "鱼饵" };
+        private static readonly SpotHeader       _spotHeader       = new() { Label = "钓场" };
+        private static readonly CatchHeader      _catchHeader      = new() { Label = "上钩的鱼" };
+        private static readonly CastStartHeader  _castStartHeader  = new() { Label = "时间戳" };
+        private static readonly BiteTypeHeader   _biteTypeHeader   = new() { Label = "咬钩力度" };
+        private static readonly HookHeader       _hookHeader       = new() { Label = "提钩方式" };
+        private static readonly DurationHeader   _durationHeader   = new() { Label = "咬钩时长" };
+        private static readonly GatheringHeader  _gatheringHeader  = new() { Label = "获得力" };
+        private static readonly PerceptionHeader _perceptionHeader = new() { Label = "鉴别力" };
+        private static readonly AmountHeader     _amountHeader     = new() { Label = "数量" };
+        private static readonly SizeHeader       _sizeHeader       = new() { Label = "尺寸" };
+        private static readonly FlagHeader       _flagHeader       = new() { Label = "状态" };
 
         private sealed class GatheringHeader : ColumnString<FishRecord>
         {
@@ -124,9 +124,9 @@ public partial class Interface
             {
                 var tt = string.Empty;
                 if (record.Flags.HasFlag(FishRecord.Effects.Large))
-                    tt = "Large Catch!";
+                    tt = "大鱼！";
                 if (record.Flags.HasFlag(FishRecord.Effects.Collectible))
-                    tt += tt.Length > 0 ? "\nCollectible!" : "Collectible!";
+                    tt += tt.Length > 0 ? "\n具有收藏价值！" : "具有收藏价值！";
                 using var color = ImRaii.PushColor(ImGuiCol.Text, ColorId.DisabledText.Value(), tt.Length == 0);
                 ImGuiUtil.RightAlign(ToName(record));
                 ImGuiUtil.HoverTooltip(tt);
@@ -158,7 +158,7 @@ public partial class Interface
         private sealed class SpotHeader : ColumnString<FishRecord>
         {
             public override string ToName(FishRecord item)
-                => item.FishingSpot?.Name ?? "Unknown";
+                => item.FishingSpot?.Name ?? "未知";
 
             public override float Width
                 => 200 * ImGuiHelpers.GlobalScale;
@@ -173,7 +173,7 @@ public partial class Interface
             }
 
             public override string ToName(FishRecord record)
-                => record.Catch?.Name[GatherBuddy.Language] ?? "None";
+                => record.Catch?.Name[GatherBuddy.Language] ?? "暂无/脱钩";
 
             public override float Width
                 => 200 * ImGuiHelpers.GlobalScale;
@@ -183,7 +183,7 @@ public partial class Interface
                 base.DrawColumn(record, idx);
                 if (ImGui.GetIO().KeyCtrl && ImGui.IsItemClicked(ImGuiMouseButton.Right))
                     _deleteIdx = idx;
-                ImGuiUtil.HoverTooltip("Hold Control and right-click to delete...");
+                ImGuiUtil.HoverTooltip("按住Ctrl键并右键单击以删除...");
             }
         }
 
@@ -213,20 +213,42 @@ public partial class Interface
             Legendary = 0x04,
             Invalid   = 0x08,
         }
-
+        private static string ToName(TugTypeFilter type)
+        {
+            return type switch
+            {
+                TugTypeFilter.Weak      =>"轻杆",
+                TugTypeFilter.Strong    =>"中杆",
+                TugTypeFilter.Legendary =>"重杆",
+                TugTypeFilter.Invalid   =>"错误",
+                _ => "未知֪",
+            };
+        }
         private sealed class BiteTypeHeader : ColumnFlags<TugTypeFilter, FishRecord>
         {
+            private TugTypeFilter[] FlagValues = Array.Empty<TugTypeFilter>();
+            private string[] FlagNames = Array.Empty<string>();
+
             public BiteTypeHeader()
             {
-                AllFlags = TugTypeFilter.Weak | TugTypeFilter.Strong | TugTypeFilter.Legendary | TugTypeFilter.Invalid;
+                FlagValues = new TugTypeFilter[]{
+                    TugTypeFilter.Weak , 
+                    TugTypeFilter.Strong , 
+                    TugTypeFilter.Legendary , 
+                    TugTypeFilter.Invalid
+                };
+                FlagNames = FlagValues.Select(f => ToName(f)).ToArray();
+                AllFlags = FlagValues.Aggregate((f, g) => f | g);
                 _filter  = AllFlags;
             }
+            protected sealed override string[] Names
+                => FlagNames;
 
             public override int Compare(FishRecord lhs, FishRecord rhs)
                 => lhs.Tug.CompareTo(rhs.Tug);
 
             public override void DrawColumn(FishRecord item, int idx)
-                => ImGui.Text(item.Tug.ToString());
+                => ImGui.Text(FishRecord.ToName(item.Tug));
 
             private TugTypeFilter _filter;
 
@@ -264,19 +286,41 @@ public partial class Interface
             Triple   = 0x10,
             Invalid  = 0x20,
         }
+        private static string ToName(HookSetFilter type)
+        {
+            return type switch
+            {
+                HookSetFilter.Regular  =>"普通提钩",
+                HookSetFilter.Precise  =>"精准提钩",
+                HookSetFilter.Powerful =>"强力提钩",
+                HookSetFilter.Double   =>"双重提钩",
+                HookSetFilter.Triple   =>"三重提钩",
+                HookSetFilter.Invalid  =>"错误数据",
+                _ => "未知֪",
+            };
+        }
 
         private sealed class HookHeader : ColumnFlags<HookSetFilter, FishRecord>
         {
+            private HookSetFilter[] FlagValues = Array.Empty<HookSetFilter>();
+            private string[] FlagNames = Array.Empty<string>();
+
             public HookHeader()
             {
-                AllFlags = HookSetFilter.Precise
-                  | HookSetFilter.Powerful
-                  | HookSetFilter.Regular
-                  | HookSetFilter.Double
-                  | HookSetFilter.Triple
-                  | HookSetFilter.Invalid;
+                FlagValues = new HookSetFilter[]{ HookSetFilter.Precise,
+                    HookSetFilter.Powerful,
+                    HookSetFilter.Regular,
+                    HookSetFilter.Double,
+                    HookSetFilter.Triple,
+                    HookSetFilter.Invalid
+                 };
+                FlagNames = FlagValues.Select(f => ToName(f)).ToArray();
+                AllFlags = FlagValues.Aggregate((f, g) => f | g);
                 _filter = AllFlags;
+
             }
+            protected sealed override string[] Names
+                => FlagNames;
 
             public override int Compare(FishRecord lhs, FishRecord rhs)
                 => lhs.Hook.CompareTo(rhs.Hook);
@@ -370,26 +414,26 @@ public partial class Interface
 
             private static readonly string[] _names =
             {
-                "Patience On",
-                "Patience Off",
-                "Patience II On",
-                "Patience II Off",
-                "Intuition On",
-                "Intuition Off",
-                "Snagging On",
-                "Snagging Off",
-                "Fish Eyes On",
-                "Fish Eyes Off",
-                "Chum On",
-                "Chum Off",
-                "Prize Catch On",
-                "Prize Catch Off",
-                "Identical Cast On",
-                "Identical Cast Off",
-                "Surface Slap On",
-                "Surface Slap Off",
-                "Collectible On",
-                "Collectible Off",
+                "耐心 开",
+                "耐心 关",
+                "耐心II 开",
+                "耐心II 关",
+                "鱼识 开",
+                "鱼识 关",
+                "钓组 开",
+                "钓组 关",
+                "鱼眼 开",
+                "鱼眼 关",
+                "撒饵 开",
+                "撒饵 关",
+                "大鱼猎手 开",
+                "大鱼猎手 关",
+                "专一垂钓 开",
+                "专一垂钓 关",
+                "拍击水面 开",
+                "拍击水面 关",
+                "收藏品采集 开",
+                "收藏品采集 关",
             };
 
             protected override IReadOnlyList<FishRecord.Effects> Values
@@ -456,7 +500,7 @@ public partial class Interface
 
                 using var tt = ImRaii.Tooltip();
                 ImGui.Image(icon.ImGuiHandle, new Vector2(icon.Width, icon.Height));
-                ImGui.Text(flag.ToString());
+                ImGui.Text(FishRecord.EffectsToName(flag));
             }
 
             public override void DrawColumn(FishRecord item, int idx)
@@ -479,30 +523,30 @@ public partial class Interface
     private void DrawRecordTab()
     {
         using var id  = ImRaii.PushId("Fish Records");
-        using var tab = ImRaii.TabItem("Fish Records");
-        ImGuiUtil.HoverTooltip("The records of my fishing prowess have been greatly exaggerated.\n"
-          + "Find, cleanup and share all data you have collected while fishing.");
+        using var tab = ImRaii.TabItem("钓鱼记录");
+        ImGuiUtil.HoverTooltip("钓鱼记录总能彰显出我不可思议的钓鱼实力。\n"
+          + "查找、清理并分享所有当你在钓鱼时自动收集的钓鱼数据。");
         if (!tab)
             return;
 
         _recordTable.Draw(ImGui.GetTextLineHeightWithSpacing());
-        if (ImGui.Button("Cleanup"))
+        if (ImGui.Button("清理"))
         {
             _plugin.FishRecorder.RemoveDuplicates();
             _plugin.FishRecorder.RemoveInvalid();
         }
 
-        ImGuiUtil.HoverTooltip("Delete all entries that were marked as invalid for some reason,\n"
-          + "as well as all entries that have a duplicate (with the same content id and timestamp).\n"
-          + "Usually, there should be none such entries.\n"
-          + "Use at your own risk, no backup will be created automatically.");
+        ImGuiUtil.HoverTooltip("删除所有因为种种原因被标记为错误的数据，\n"
+          + "以及所有重复的数据 (有相同的 content id 和时间戳)。\n"
+          + "通常来说不会产生这样的数据项。\n"
+          + "使用该功能需要风险自负，插件不会自动备份这些数据。");
 
         ImGui.SameLine();
         try
         {
-            if (ImGui.Button("Copy to Clipboard"))
+            if (ImGui.Button("复制到粘贴板"))
                 ImGui.SetClipboardText(_plugin.FishRecorder.ExportBase64(0, _plugin.FishRecorder.Records.Count));
-            ImGuiUtil.HoverTooltip("Export all fish records to your clipboard, to share them with other people. This may be a lot");
+            ImGuiUtil.HoverTooltip("导出所有钓鱼记录到粘贴板来分享给你的朋友，这可能非常多。");
         }
         catch
         {
@@ -512,9 +556,9 @@ public partial class Interface
         ImGui.SameLine();
         try
         {
-            if (ImGui.Button("Import from Clipboard"))
+            if (ImGui.Button("从粘贴板导入"))
                 _plugin.FishRecorder.ImportBase64(ImGui.GetClipboardText());
-            ImGuiUtil.HoverTooltip("Import a set of fish records shared with you from your clipboard. Should automatically skip duplicates.");
+            ImGuiUtil.HoverTooltip("从你的粘贴板导入一系列的钓鱼记录。会自动跳过重复项。");
         }
         catch
         {
@@ -524,9 +568,9 @@ public partial class Interface
         ImGui.SameLine();
         try
         {
-            if (ImGui.Button("Export JSON"))
+            if (ImGui.Button("导出为JSON"))
                 ImGui.OpenPopup(RecordTable.FileNamePopup);
-            ImGuiUtil.HoverTooltip("Given a path, export all records as a single JSON file.");
+            ImGuiUtil.HoverTooltip("给定一个地址，导出所有钓鱼记录到一个JSON文件。");
         }
         catch
         {
@@ -536,11 +580,11 @@ public partial class Interface
         ImGui.SameLine();
         try
         {
-            if (ImGui.Button("Copy Caught Fish JSON"))
+            if (ImGui.Button("复制鱼获数据JSON"))
             {
                 var logFish = GatherBuddy.GameData.Fishes.Values.Where(f => f.InLog && f.FishingSpots.Count > 0).ToArray();
                 var ids     = logFish.Where(f => GatherBuddy.FishLog.IsUnlocked(f)).Select(f => f.ItemId).ToArray();
-                Communicator.PrintClipboardMessage("List of ", $"{ids.Length}/{logFish.Length} caught fish ");
+                Communicator.PrintClipboardMessage("总计 ", $"{ids.Length}/{logFish.Length} 已捕获的鱼 ");
                 ImGui.SetClipboardText(JsonConvert.SerializeObject(ids, Formatting.Indented));
             }
         }

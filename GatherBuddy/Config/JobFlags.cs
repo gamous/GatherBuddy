@@ -12,3 +12,21 @@ public enum JobFlags
     Fishing      = 0x10,
     Spearfishing = 0x20,
 }
+
+public static class JobFlagsExtension
+{
+    public static string ToName(this JobFlags type)
+    {
+        return type switch
+        {
+            JobFlags.Logging => "采伐",
+            JobFlags.Harvesting => "割草",
+            JobFlags.Mining => "采掘",
+            JobFlags.Quarrying => "碎石",
+            JobFlags.Fishing => "钓鱼",
+            JobFlags.Spearfishing => "刺鱼",
+
+            _ => "未知",
+        };
+    }
+}

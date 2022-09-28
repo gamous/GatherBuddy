@@ -16,7 +16,7 @@ public partial class Interface
 {
     internal static bool DrawLocationInput(IGatherable item, ILocation? current, out ILocation? ret)
     {
-        const string noPreferred = "No Preferred Location";
+        const string noPreferred = "无偏好地点";
         var          width       = SetInputWidth * 0.85f;
         ret = current;
         if (item.Locations.Count() == 1)
@@ -29,7 +29,7 @@ public partial class Interface
 
         var text = current?.Name ?? noPreferred;
         ImGui.SetNextItemWidth(width);
-        using var combo = ImRaii.Combo("##Location", text);
+        using var combo = ImRaii.Combo("##地点", text);
         DrawLocationTooltip(current);
         if (!combo)
             return false;
@@ -79,7 +79,7 @@ public partial class Interface
             using var tt = ImRaii.Tooltip();
 
             if (uptimeDependency)
-                ImGuiUtil.DrawTextButton("Uptime Dependency", Vector2.Zero, 0xFF202080);
+                ImGuiUtil.DrawTextButton("时间限制", Vector2.Zero, 0xFF202080);
 
             if (!char.IsLetter(timeString[0]))
                 ImGui.Text($"{uptime.Start}\n{uptime.End}\n{uptime.DurationString()}");
@@ -117,7 +117,7 @@ public partial class Interface
 
         ImGuiUtil.HoverTooltip(tooltip);
 
-        if (ImGuiUtil.DrawDisabledButton("Default", Vector2.Zero, defaultValue, defaultValue == oldValue))
+        if (ImGuiUtil.DrawDisabledButton("默认", Vector2.Zero, defaultValue, defaultValue == oldValue))
         {
             setValue(defaultValue);
             GatherBuddy.Config.Save();
@@ -136,20 +136,20 @@ public partial class Interface
         ImGui.SameLine();
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
         ImGui.NewLine();
-        ImGui.TextUnformatted($"{table.CurrentItems} / {table.TotalItems} {name} Visible");
+        ImGui.TextUnformatted($"{table.CurrentItems} / {table.TotalItems} {name} 可见");
         if (table.TotalColumns != table.VisibleColumns)
         {
             ImGui.SameLine();
             ImGui.Dummy(new Vector2(50 * ImGuiHelpers.GlobalScale, 0));
             ImGui.SameLine();
-            ImGui.TextUnformatted($"{table.TotalColumns - table.VisibleColumns} Columns Hidden");
+            ImGui.TextUnformatted($"{table.TotalColumns - table.VisibleColumns} 隐藏列");
         }
     }
 
     private static void DrawClippy()
     {
-        const string popupName = "GatherClippy###ClippyPopup";
-        const string text      = "Can't find something?";
+        const string popupName = "采集小贴士###小贴士";
+        const string text      = "找不到需要的东西？";
         if (GatherBuddy.Config.HideClippy)
             return;
 
@@ -172,8 +172,8 @@ public partial class Interface
             GatherBuddy.Config.Save();
         }
 
-        ImGuiUtil.HoverTooltip("Click for some help navigating this table.\n"
-          + "Control + Shift + Right-Click to permanently hide this button.");
+        ImGuiUtil.HoverTooltip("单击以获得使用该表格的一些帮助信息。\n"
+          + "Ctrl + Shift + 右键单击来永久隐藏该按钮。");
 
         color.Pop();
         var windowSize = new Vector2(1024 * ImGuiHelpers.GlobalScale,
@@ -186,27 +186,27 @@ public partial class Interface
             return;
 
         ImGui.BulletText(
-            "You can use text filters like \"Item Name...\" to only show entries that contain the given string. They are case-insensitive and are not stored for your next session.");
+            "您可以使用文本过滤器例如 \"物品名称...\" 来筛选所有包含给定字符串的项。 大小写不敏感且不会跨会话存储。");
         ImGui.BulletText(
-            "Text filters also support regular expressions, e.g. \"(blue|green)\" matches all entries that contain either blue or green.");
-        ImGui.BulletText("Button filters like \"Next Uptime\", \"Node Type\" or \"Fish Type\" allow you to filter specific types on click.");
-        ImGui.BulletText("Those filters are stored across sessions. For columns with active filters, the filter buttons are tinted red.");
+            "文本过滤器还支持正则表达式, 例如 \"(饿饿|涩涩)\"匹配所有包括饿饿或者包括涩涩这两个字符串的所有项。");
+        ImGui.BulletText("按钮过滤器 \"下次窗口\", \"采集点类型\" or \"种类\" 允许您过滤出所点击的特定类型。");
+        ImGui.BulletText("这些过滤器是跨会话存储的。对于有活动过滤器的列，过滤器按钮是红色的。");
         ImGui.NewLine();
         ImGui.BulletText(
-            "You can click in the blank space of a header to sort the table in this column, ascending or descending. This is signified with a little triangle pointing up or down.");
+            "您可以单击标题的空白处，对该列中的表进行升序或降序排序。这是用一个小三角形来表示的。");
         ImGui.BulletText(
-            "You can right-click in the blank space of a header to open the table context menu, in which you can hide columns you are not interested in.");
+            "您可以在标题栏处右键单击打开采集表的上下文菜单，在其中可以隐藏不感兴趣的列。");
         ImGui.BulletText(
-            "You can resize text columns by dragging the small separation markers of the column. It highlights the line in blue. Size is stored across sessions.");
+            "您可以通过拖动列的小分隔标记来调整文本列的宽度。文本列的宽度是跨会话存储的。");
         ImGui.BulletText(
-            "You can reorder most columns by left-clicking in the blank space, holding the mouse button and dragging them. Ordering is stored across sessions.");
+            "您可以通过在标题栏空格处左键单击并拖动来重新排序大多数列。数据列的顺序是跨会话存储的。");
         ImGui.NewLine();
         ImGui.BulletText(
-            "You can right-click item names and a few other columns (like bait and fishing spot) to open further context menus with object-specific options.");
-        ImGui.BulletText("You can also re-order the tabs themselves, though that is not stored across sessions.");
+            "您可以右键单击物品名称或其他一些列的内容 (比如鱼饵和钓场) 来打开特定目标物品的上下文菜单。");
+        ImGui.BulletText("您还可以对选项卡本身进行重新排序，尽管这不是跨会话存储的。");
 
         ImGui.SetCursorPosY(windowSize.Y - ImGui.GetFrameHeight() - ImGui.GetStyle().WindowPadding.Y);
-        if (ImGui.Button("Understood", -Vector2.UnitX))
+        if (ImGui.Button("哈哈我学会啦", -Vector2.UnitX))
             ImGui.CloseCurrentPopup();
     }
 }

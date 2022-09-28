@@ -36,6 +36,27 @@ public struct FishRecord
         Valid         = 0x00008000,
         Legacy        = 0x00010000,
     }
+    public static string EffectsToName(Effects type)
+    {
+        return type switch
+        {
+            Effects.None          =>"暂无",
+            Effects.Snagging      =>"钓组",
+            Effects.Chum          =>"撒饵",
+            Effects.Intuition     =>"鱼识",
+            Effects.FishEyes      =>"鱼眼",
+            Effects.IdenticalCast => "专一垂钓",
+            Effects.SurfaceSlap   =>"拍击水面",
+            Effects.PrizeCatch    =>"大鱼猎手",
+            Effects.Patience      =>"耐心",
+            Effects.Patience2     =>"耐心II",
+            Effects.Collectible   =>"收藏品采集",
+            Effects.Large         =>"Large",
+            Effects.Valid         =>"Valid",
+            Effects.Legacy        =>"Legacy",
+            _ => "",
+        };
+    }
 
     private uint    _bait;
     private uint    _catch;
@@ -127,6 +148,19 @@ public struct FishRecord
             3 => BiteType.Legendary,
             _ => BiteType.Unknown,
         };
+
+    public static string ToName(BiteType type)
+    {
+        return type switch
+        {
+            BiteType.None      =>"暂无",
+            BiteType.Weak      =>"轻杆",
+            BiteType.Strong    =>"中杆",
+            BiteType.Legendary =>"重杆",
+            BiteType.Unknown   =>"未知",
+            _ => "",
+        };
+    }
 
     public HookSet Hook
         => (_tugAndHook >> 4) switch

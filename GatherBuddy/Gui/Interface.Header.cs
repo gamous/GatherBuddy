@@ -101,10 +101,10 @@ public partial class Interface
     }
 
     private void DrawLastItemAlarm()
-        => DrawLastAlarm(true, "No Item Alarm Triggered");
+        => DrawLastAlarm(true, "没有触发的采集时钟");
 
     private void DrawLastFishAlarm()
-        => DrawLastAlarm(false, "No Fish Alarm Triggered");
+        => DrawLastAlarm(false, "没有触发的钓鱼时钟");
 
 
     private void DrawAlarmRow()
@@ -121,7 +121,7 @@ public partial class Interface
     private static void DrawEorzeaTime(string time)
     {
         ImGuiUtil.DrawTextButton(time, Vector2.UnitY * WeatherIconSize.Y, ColorId.HeaderEorzeaTime.Value());
-        ImGuiUtil.HoverTooltip("If this does not correspond to your in-game Eorzea Time, verify that your windows system time is accurate.");
+        ImGuiUtil.HoverTooltip("如果这与游戏中的艾欧泽亚时间不一致，请确认您的系统时间是准确的。");
     }
 
     private static void DrawNextEorzeaHour(string hour, Vector2 size)
@@ -168,7 +168,7 @@ public partial class Interface
         nextHourS    -= nextHourM * RealTime.SecondsPerMinute;
         nextWeatherS -= nextWeatherM * RealTime.SecondsPerMinute;
 
-        var nextWeatherString = $"  {nextWeatherM:D2}:{nextWeatherS:D2} Min.  ";
+        var nextWeatherString = $"  {nextWeatherM:D2}:{nextWeatherS:D2} 分钟。 ";
         var width = -(ImGui.CalcTextSize(nextWeatherString).X
           + (WeatherIconSize.X + ItemSpacing.X + FramePadding.X) * 3);
 
@@ -176,7 +176,7 @@ public partial class Interface
         using var _ = ImRaii.Group();
         DrawEorzeaTime($"ET {GatherBuddy.Time.EorzeaHourOfDay:D2}:{GatherBuddy.Time.EorzeaMinuteOfHour:D2}");
         ImGui.SameLine();
-        DrawNextEorzeaHour($"{nextHourM:D2}:{nextHourS:D2} Min to next hour.", new Vector2(width, WeatherIconSize.Y));
+        DrawNextEorzeaHour($"离下个艾欧泽亚时还有 {nextHourM:D2}:{nextHourS:D2} 分钟。", new Vector2(width, WeatherIconSize.Y));
         ImGui.SameLine();
         DrawNextWeather(nextWeatherString);
     }
