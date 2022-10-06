@@ -38,7 +38,7 @@ public class ContextMenu : IDisposable
         _contextMenu.Dispose();
     }
 
-    private static readonly SeString GatherString = new(new TextPayload("Gather"));
+    private static readonly SeString GatherString = new(new TextPayload("采集"));
 
     private InventoryContextMenuItem? CheckInventoryItem(uint itemId)
     {
