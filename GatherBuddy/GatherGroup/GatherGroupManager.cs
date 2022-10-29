@@ -8,7 +8,7 @@ using GatherBuddy.Interfaces;
 using GatherBuddy.Plugin;
 using GatherBuddy.Time;
 using Newtonsoft.Json;
-
+using Dalamud.Logging;
 namespace GatherBuddy.GatherGroup;
 
 internal static class SeStringBuilderExtension
@@ -38,8 +38,8 @@ public class GatherGroupManager
     {
         SeStringBuilder b = new();
         b.AddText("Please use with ")
-            .ColoredText("/gathergroup ",                      GatherBuddy.Config.SeColorCommands)
-            .ColoredText("[Name] ",                            GatherBuddy.Config.SeColorNames)
+            .ColoredText("/gathergroup ", GatherBuddy.Config.SeColorCommands)
+            .ColoredText("[Name] ", GatherBuddy.Config.SeColorNames)
             .ColoredText("[optional: Eorzea Minute Offset]\n", GatherBuddy.Config.SeColorArguments)
             .AddText("Available groups are:\n");
         foreach (var value in Groups.Values)
@@ -117,15 +117,15 @@ public class GatherGroupManager
             var newNode = new TimedGroupNode(item)
             {
                 EorzeaStartMinute = start == null ? 0 : Math.Clamp(start.Value, 0, RealTime.MinutesPerDay - 1),
-                EorzeaEndMinute   = end == null ? 0 : Math.Clamp(end.Value,     0, RealTime.MinutesPerDay - 1),
-                Annotation        = annotation ?? string.Empty,
+                EorzeaEndMinute = end == null ? 0 : Math.Clamp(end.Value, 0, RealTime.MinutesPerDay - 1),
+                Annotation = annotation ?? string.Empty,
             };
             group.Nodes.Add(newNode);
             return true;
         }
 
         var changes = false;
-        var node    = group.Nodes[idx];
+        var node = group.Nodes[idx];
         if (item != null)
         {
             if (!ReferenceEquals(node.Item, item))
@@ -178,7 +178,7 @@ public class GatherGroupManager
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Could not write gather groups to file {file.FullName}:\n{e}");
+            PluginLog.Error($"Could not write gather groups to file {file.FullName}:\n{e}");
         }
     }
 
@@ -208,7 +208,7 @@ public class GatherGroupManager
     public static GatherGroupManager Load()
     {
         var manager = new GatherGroupManager();
-        var file    = Functions.ObtainSaveFile(FileName);
+        var file = Functions.ObtainSaveFile(FileName);
         if (file is not { Exists: true })
         {
             manager.SetDefaults();
@@ -218,14 +218,14 @@ public class GatherGroupManager
 
         try
         {
-            var text    = File.ReadAllText(file.FullName);
-            var data    = JsonConvert.DeserializeObject<List<TimedGroup.Config>>(text)!;
+            var text = File.ReadAllText(file.FullName);
+            var data = JsonConvert.DeserializeObject<List<TimedGroup.Config>>(text)!;
             var changes = false;
             foreach (var config in data)
             {
                 if (!TimedGroup.FromConfig(config, out var group))
                 {
-                    GatherBuddy.Log.Error($"Invalid items in gather group {group.Name} skipped.");
+                    PluginLog.Error($"Invalid items in gather group {group.Name} skipped.");
                     changes = true;
                 }
 
@@ -233,14 +233,14 @@ public class GatherGroupManager
                 if (searchName.Length == 0)
                 {
                     changes = true;
-                    GatherBuddy.Log.Error("Gather group without name found, skipping.");
+                    PluginLog.Error("Gather group without name found, skipping.");
                     continue;
                 }
 
                 if (manager.Groups.ContainsKey(searchName))
                 {
                     changes = true;
-                    GatherBuddy.Log.Error($"Multiple gather groups with the same name {searchName} found, skipping later ones.");
+                    PluginLog.Error($"Multiple gather groups with the same name {searchName} found, skipping later ones.");
                     continue;
                 }
 
@@ -253,7 +253,7 @@ public class GatherGroupManager
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Error loading gather groups:\n{e}");
+            PluginLog.Error($"Error loading gather groups:\n{e}");
             manager.Groups.Clear();
             manager.SetDefaults();
             manager.Save();

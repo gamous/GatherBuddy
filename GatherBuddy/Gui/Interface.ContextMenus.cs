@@ -16,7 +16,7 @@ using GatherBuddy.Plugin;
 using GatherBuddy.Structs;
 using ImGuiNET;
 using ImRaii = OtterGui.Raii.ImRaii;
-
+using Dalamud.Logging;
 namespace GatherBuddy.Gui;
 
 public partial class Interface
@@ -37,8 +37,8 @@ public partial class Interface
                 _plugin.AlarmManager.AddGroup(new AlarmGroup()
                 {
                     Description = AutomaticallyGenerated,
-                    Enabled     = true,
-                    Alarms      = new List<Alarm> { new(item) { Enabled = true } },
+                    Enabled = true,
+                    Alarms = new List<Alarm> { new(item) { Enabled = true } },
                 });
                 current = _alarmCache.Selector.EnsureCurrent();
             }
@@ -55,8 +55,8 @@ public partial class Interface
 
     private void DrawAddToGatherGroup(IGatherable item)
     {
-        var       current = _gatherGroupCache.Selector.EnsureCurrent();
-        using var color   = ImRaii.PushColor(ImGuiCol.Text, ColorId.DisabledText.Value(), current == null);
+        var current = _gatherGroupCache.Selector.EnsureCurrent();
+        using var color = ImRaii.PushColor(ImGuiCol.Text, ColorId.DisabledText.Value(), current == null);
         if (ImGui.Selectable("添加到采集组") && current != null)
             if (_plugin.GatherGroupManager.ChangeGroupNode(current, current.Nodes.Count, item, null, null, null, false))
                 _plugin.GatherGroupManager.Save();
@@ -78,8 +78,8 @@ public partial class Interface
             if (current == null)
                 _plugin.GatherWindowManager.AddPreset(new GatherWindowPreset
                 {
-                    Enabled     = true,
-                    Items       = new List<IGatherable> { item },
+                    Enabled = true,
+                    Items = new List<IGatherable> { item },
                     Description = AutomaticallyGenerated,
                 });
             else
@@ -95,12 +95,12 @@ public partial class Interface
     {
         var lang = GatherBuddy.Language switch
         {
-            ClientLanguage.ChineseSimplified  => "zh",
-            ClientLanguage.English  => "en",
-            ClientLanguage.German   => "de",
-            ClientLanguage.French   => "fr",
+            ClientLanguage.ChineseSimplified => "zh",
+            ClientLanguage.English => "en",
+            ClientLanguage.German => "de",
+            ClientLanguage.French => "fr",
             ClientLanguage.Japanese => "ja",
-            _                       => "en",
+            _ => "en",
         };
 
         return $"db/{lang}/{type}/{id}";
@@ -109,7 +109,7 @@ public partial class Interface
     private static string TeamCraftAddressEnd(FishingSpot s)
         => s.Spearfishing
             ? TeamCraftAddressEnd("spearfishing-spot", s.SpearfishingSpotData!.GatheringPointBase.Row)
-            : TeamCraftAddressEnd("fishing-spot",      s.Id);
+            : TeamCraftAddressEnd("fishing-spot", s.Id);
 
     private static void DrawOpenInPastryFish(FishingSpot s)
     {
@@ -122,6 +122,23 @@ public partial class Interface
         try
         {
             Process.Start(new ProcessStartInfo($"https://fish.ffmomola.com/#/wiki?spotId={s.Id}") { UseShellExecute = true });
+        }
+        catch (Exception e)
+        {
+            PluginLog.Error($"无法打开鱼糕:\n{e.Message}");
+        }
+    }
+    private static void DrawOpenInPastryFish(IGatherable item)
+    {
+        if (item.Type!=ObjectType.Fish)
+            return;
+
+        if (!ImGui.Selectable("在鱼糕中打开"))
+            return;
+
+        try
+        {
+            Process.Start(new ProcessStartInfo($"https://fish.ffmomola.com/#/wiki?fishId={item.ItemId}") { UseShellExecute = true });
         }
         catch (Exception e)
         {
@@ -146,7 +163,7 @@ public partial class Interface
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Could not open GarlandTools:\n{e.Message}");
+            PluginLog.Error($"Could not open GarlandTools:\n{e.Message}");
         }
     }
 
@@ -191,7 +208,7 @@ public partial class Interface
                 }
                 catch
                 {
-                    GatherBuddy.Log.Error("Could not open local teamcraft.");
+                    PluginLog.Error("Could not open local teamcraft.");
                 }
             }
         });
@@ -225,6 +242,7 @@ public partial class Interface
             Communicator.Print(SeString.CreateItemLink(item.ItemId));
         DrawOpenInGarlandTools(item.ItemId);
         DrawOpenInTeamCraft(item.ItemId);
+        DrawOpenInPastryFish(item);
     }
 
     public static void CreateGatherWindowContextMenu(IGatherable item, bool clicked)

@@ -1,9 +1,9 @@
-name: GatherBuddy
+ï»¿name: GatherBuddy
 author: Ottermandias
 description: |-
-  Ìí¼Ó¿ÉÒÔÍ¨¹ıÎïÆ·Ãû³Æ²éÕÒ²É¼¯µãµÄÃüÁîÀ´¼ò»¯²É¼¯£¬
-  ²¢Ìá¹©Ò»¸öUIÀ´³ÖĞø×·×Ù¿É²É¼¯Ê±¼ä´°¿ÚÓëÌìÆøÌõ¼ş¡£
-punchline: ¸ÄÉÆ²É¼¯ÓëµöÓãÌåÑé¡£
+  æ·»åŠ å¯ä»¥é€šè¿‡ç‰©å“åç§°æŸ¥æ‰¾é‡‡é›†ç‚¹çš„å‘½ä»¤æ¥ç®€åŒ–é‡‡é›†ï¼Œ
+  å¹¶æä¾›ä¸€ä¸ªUIæ¥æŒç»­è¿½è¸ªå¯é‡‡é›†æ—¶é—´çª—å£ä¸å¤©æ°”æ¡ä»¶ã€‚
+punchline: æ”¹å–„é‡‡é›†ä¸é’“é±¼ä½“éªŒã€‚
 repo_url: https://github.com/Ottermandias/GatherBuddy
 dalamud_api_level: 6
 tags:

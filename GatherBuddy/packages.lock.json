@@ -2,6 +2,18 @@
   "version": 1,
   "dependencies": {
     "net5.0-windows7.0": {
+      "Dalamud.ContextMenu": {
+        "type": "Direct",
+        "requested": "[1.1.1, )",
+        "resolved": "1.1.1",
+        "contentHash": "YwqdkjEQKHW7VGGmWxhBwMpuN9twsLaO6Lm05uQ1LosN2iEKNLrAMB8LlUy8qqCojlrRnhiwece/Z6Ppvfgi6g=="
+      },
+      "DalamudPackager": {
+        "type": "Direct",
+        "requested": "[2.1.7, )",
+        "resolved": "2.1.7",
+        "contentHash": "jnZ/sdInyn07ycuWI+pPOtP/xE3v+c4+jYJfDt36FWnBF9NKqkpzfviJtPl/jGLgbaCmFIXu+Yid0N8GvdKefg=="
+      },
       "gatherbuddy.gamedata": {
         "type": "Project",
         "dependencies": {

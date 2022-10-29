@@ -13,7 +13,7 @@ using ImGuiNET;
 using OtterGui;
 using OtterGui.Widgets;
 using ImRaii = OtterGui.Raii.ImRaii;
-
+using Dalamud.Logging;
 namespace GatherBuddy.Gui;
 
 public partial class Interface
@@ -28,13 +28,13 @@ public partial class Interface
     private class AlarmWindowDragDropData
     {
         public AlarmGroup Group;
-        public Alarm      Alarm;
-        public int        AlarmIdx;
+        public Alarm Alarm;
+        public int AlarmIdx;
 
         public AlarmWindowDragDropData(AlarmGroup group, Alarm alarm, int idx)
         {
-            Group    = group;
-            Alarm    = alarm;
+            Group = group;
+            Alarm = alarm;
             AlarmIdx = idx;
         }
     }
@@ -61,7 +61,7 @@ public partial class Interface
 
             protected override bool OnDraw(int idx)
             {
-                using var id    = ImRaii.PushId(idx);
+                using var id = ImRaii.PushId(idx);
                 using var color = ImRaii.PushColor(ImGuiCol.Text, ColorId.DisabledText.Value(), !Items[idx].Enabled);
                 return ImGui.Selectable(CheckUnnamed(Items[idx].Name), idx == CurrentIdx);
             }
@@ -85,9 +85,9 @@ public partial class Interface
 
                 var group = new AlarmGroup()
                 {
-                    Name        = name,
+                    Name = name,
                     Description = configGroup.Description,
-                    Enabled     = false,
+                    Enabled = false,
                     Alarms = configGroup.Alarms.Select(a => Alarm.FromConfig(a, out var alarm) ? alarm : null)
                         .Where(a => a != null)
                         .Cast<Alarm>()
@@ -95,7 +95,7 @@ public partial class Interface
                 };
 
                 if (group.Alarms.Count < configGroup.Alarms.Count())
-                    GatherBuddy.Log.Warning("Invalid alarms skipped");
+                    PluginLog.Warning("Invalid alarms skipped");
 
                 _manager.AddGroup(group);
                 return true;
@@ -134,30 +134,30 @@ public partial class Interface
         public static readonly string SoundIdNames =
             string.Join("\0", SoundIds.Select(s => s == Sounds.None ? "无提示音" : $"提示音 {s.ToIdx()}"));
 
-        public readonly AlarmSelector  Selector;
+        public readonly AlarmSelector Selector;
         public readonly TimedItemCombo ItemCombo = new(string.Empty);
 
         public bool EditGroupName;
         public bool EditGroupDesc;
 
-        public string NewName         = string.Empty;
-        public int    NewItemIdx      = 0;
-        public bool   NewEnabled      = false;
-        public bool   NewPrintMessage = false;
-        public int    NewSoundIdx     = 0;
-        public int    NewSecondOffset = 0;
+        public string NewName = string.Empty;
+        public int NewItemIdx = 0;
+        public bool NewEnabled = false;
+        public bool NewPrintMessage = false;
+        public int NewSoundIdx = 0;
+        public int NewSecondOffset = 0;
 
         public int ChangedSecondOffset = 0;
-        public int ChangedAlarmIdx     = -1;
+        public int ChangedAlarmIdx = -1;
 
         public Alarm CreateAlarm()
             => new(GatherBuddy.UptimeManager.TimedGatherables[NewItemIdx])
             {
-                Enabled      = NewEnabled,
+                Enabled = NewEnabled,
                 SecondOffset = NewSecondOffset,
                 PrintMessage = NewPrintMessage,
-                Name         = NewName,
-                SoundId      = SoundIds[NewSoundIdx],
+                Name = NewName,
+                SoundId = SoundIds[NewSoundIdx],
             };
     }
 
@@ -165,9 +165,9 @@ public partial class Interface
 
     private void DrawAlarmInfo(ref int alarmIdx, AlarmGroup group)
     {
-        var       alarm   = group.Alarms[alarmIdx];
-        using var id      = ImRaii.PushId(alarmIdx);
-        var       enabled = alarm.Enabled;
+        var alarm = group.Alarms[alarmIdx];
+        using var id = ImRaii.PushId(alarmIdx);
+        var enabled = alarm.Enabled;
 
         ImGui.TableNextColumn();
         if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), IconButtonSize, "删除闹钟...", false, true))
@@ -196,7 +196,7 @@ public partial class Interface
         ImGui.SetNextItemWidth(SetInputWidth / 2);
         if (ImGui.DragInt("##偏移", ref secondOffset, 0.1f, 0, RealTime.SecondsPerDay))
         {
-            _alarmCache.ChangedAlarmIdx     = alarmIdx;
+            _alarmCache.ChangedAlarmIdx = alarmIdx;
             _alarmCache.ChangedSecondOffset = secondOffset;
         }
 
@@ -223,7 +223,7 @@ public partial class Interface
 
         ImGui.TableNextColumn();
         var (_, time) = AlarmManager.GetUptime(alarm);
-        var now  = GatherBuddy.Time.ServerTime.AddSeconds(alarm.SecondOffset);
+        var now = GatherBuddy.Time.ServerTime.AddSeconds(alarm.SecondOffset);
         var size = Vector2.UnitX * 150 * ImGuiHelpers.GlobalScale;
         if (time.Start > now)
             ImGuiUtil.DrawTextButton(TimeInterval.DurationString(time.Start, now, false), size, ColorId.WarningBg.Value());
@@ -253,7 +253,7 @@ public partial class Interface
         ImGui.TableNextColumn();
         ImGui.TableNextColumn();
         var allEnabled = group.Alarms.All(a => a.Enabled);
-        var ret        = ImGui.Checkbox("##启用全部", ref allEnabled);
+        var ret = ImGui.Checkbox("##启用全部", ref allEnabled);
         ImGuiUtil.HoverTooltip("启用全部闹钟，包括所有被禁用的闹钟。");
 
         if (!ret)
@@ -326,7 +326,7 @@ public partial class Interface
             }
             catch (Exception e)
             {
-                GatherBuddy.Log.Error($"Could not write Alarm Group {group.Name} to Clipboard:\n{e}");
+                PluginLog.Error($"Could not write Alarm Group {group.Name} to Clipboard:\n{e}");
                 Communicator.PrintClipboardMessage("Alarm Group ", group.Name, e);
             }
         }
@@ -346,7 +346,7 @@ public partial class Interface
 
     private void DrawAlarmTab()
     {
-        using var id  = ImRaii.PushId("Alarms");
+        using var id = ImRaii.PushId("Alarms");
         using var tab = ImRaii.TabItem("闹钟");
         ImGuiUtil.HoverTooltip("你是否经常发现自己总在重要的约会中迟到，连打个招呼或再见的机会都没有?\n"
           + "设置属于你自己的闹钟！维埃拉族甚至可以把它戴在他们的脖子上。");

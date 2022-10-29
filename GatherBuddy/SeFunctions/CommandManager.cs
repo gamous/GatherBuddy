@@ -3,18 +3,18 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Dalamud.Game;
 using Dalamud.Game.Gui;
-
+using Dalamud.Logging;
 namespace GatherBuddy.SeFunctions;
 
 public class CommandManager
 {
     private readonly ProcessChatBox _processChatBox;
-    private readonly IntPtr         _uiModulePtr;
+    private readonly IntPtr _uiModulePtr;
 
     public CommandManager(GameGui gameGui, ProcessChatBox processChatBox)
     {
         _processChatBox = processChatBox;
-        _uiModulePtr    = gameGui.GetUIModule();
+        _uiModulePtr = gameGui.GetUIModule();
     }
 
     public CommandManager(GameGui gameGui, SigScanner sigScanner)
@@ -26,13 +26,13 @@ public class CommandManager
         // First try to process the command through Dalamud.
         if (Dalamud.Commands.ProcessCommand(message))
         {
-            GatherBuddy.Log.Verbose($"Executed Dalamud command \"{ message}\".");
+            PluginLog.Verbose($"Executed Dalamud command \"{message}\".");
             return true;
         }
 
         if (_uiModulePtr == IntPtr.Zero)
         {
-            GatherBuddy.Log.Error("Can not execute \"{message}\" because no uiModulePtr is available.");
+            PluginLog.Error("Can not execute \"{message}\" because no uiModulePtr is available.");
             return false;
         }
 
@@ -50,7 +50,7 @@ public class CommandManager
     private static (IntPtr, long) PrepareString(string message)
     {
         var bytes = Encoding.UTF8.GetBytes(message);
-        var mem   = Marshal.AllocHGlobal(bytes.Length + 30);
+        var mem = Marshal.AllocHGlobal(bytes.Length + 30);
         Marshal.Copy(bytes, 0, mem, bytes.Length);
         Marshal.WriteByte(mem + bytes.Length, 0);
         return (mem, bytes.Length + 1);
@@ -59,8 +59,8 @@ public class CommandManager
     private static IntPtr PrepareContainer(IntPtr message, long length)
     {
         var mem = Marshal.AllocHGlobal(400);
-        Marshal.WriteInt64(mem,        message.ToInt64());
-        Marshal.WriteInt64(mem + 0x8,  64);
+        Marshal.WriteInt64(mem, message.ToInt64());
+        Marshal.WriteInt64(mem + 0x8, 64);
         Marshal.WriteInt64(mem + 0x10, length);
         Marshal.WriteInt64(mem + 0x18, 0);
         return mem;

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-
+using Dalamud.Logging;
 namespace GatherBuddy.FishTimer.OldRecords;
 
 public struct Record
@@ -8,15 +8,15 @@ public struct Record
     public const uint MinTime = 1000;
     public const uint MaxTime = 45000;
 
-    public HashSet<uint> SuccessfulBaits   { get; }      = new();
-    public ushort        EarliestCatch     { get; set; } = ushort.MaxValue;
-    public ushort        LatestCatch       { get; set; } = 0;
-    public ushort        EarliestCatchChum { get; set; } = ushort.MaxValue;
-    public ushort        LatestCatchChum   { get; set; } = 0;
-    public bool          WithoutSnagging   { get; set; } = false;
+    public HashSet<uint> SuccessfulBaits { get; } = new();
+    public ushort EarliestCatch { get; set; } = ushort.MaxValue;
+    public ushort LatestCatch { get; set; } = 0;
+    public ushort EarliestCatchChum { get; set; } = ushort.MaxValue;
+    public ushort LatestCatchChum { get; set; } = 0;
+    public bool WithoutSnagging { get; set; } = false;
 
     public Record()
-    {}
+    { }
 
     private static readonly Regex V3MigrationRegex = new("(Unknown|Weak|Strong|Legendary) ", RegexOptions.Compiled);
 
@@ -27,25 +27,25 @@ public struct Record
     {
         (uint, Record)? Error()
         {
-            GatherBuddy.Log.Error($"Could not create fishing record from \"{line}\".");
+            PluginLog.Error($"Could not create fishing record from \"{line}\".");
             return null;
         }
 
         line = MigrateToV3(line);
-        var split  = line.Split(' ');
+        var split = line.Split(' ');
         var length = split.Length;
 
-        const int fishIdOffset         = 0;
-        const int colonOffset          = 1;
-        const int openBraceOffset      = 2;
-        var       earlyCatchOffset     = 3;
-        var       lateCatchOffset      = 4;
-        var       earlyCatchChumOffset = 5;
-        var       lateCatchChumOffset  = 6;
-        var       snaggingOffset       = 7;
-        var       openBracketOffset    = 8;
-        var       firstBaitOffset      = 9;
-        var       closeBracketOffset   = length - 1;
+        const int fishIdOffset = 0;
+        const int colonOffset = 1;
+        const int openBraceOffset = 2;
+        var earlyCatchOffset = 3;
+        var lateCatchOffset = 4;
+        var earlyCatchChumOffset = 5;
+        var lateCatchChumOffset = 6;
+        var snaggingOffset = 7;
+        var openBracketOffset = 8;
+        var firstBaitOffset = 9;
+        var closeBracketOffset = length - 1;
 
         if (length < 8)
             return Error();
@@ -53,11 +53,11 @@ public struct Record
         if (length < 9 || split[openBracketOffset] != "[")
             if (split[openBracketOffset - 2] == "[")
             {
-                earlyCatchChumOffset =  -1;
-                lateCatchChumOffset  =  -1;
-                snaggingOffset       -= 2;
-                openBracketOffset    -= 2;
-                firstBaitOffset      -= 2;
+                earlyCatchChumOffset = -1;
+                lateCatchChumOffset = -1;
+                snaggingOffset -= 2;
+                openBracketOffset -= 2;
+                firstBaitOffset -= 2;
             }
 
         if (split[colonOffset] != ":"
@@ -93,11 +93,11 @@ public struct Record
 
         Record ret = new()
         {
-            EarliestCatch     = earliestCatch,
+            EarliestCatch = earliestCatch,
             EarliestCatchChum = earliestCatchChum,
-            LatestCatch       = latestCatch,
-            LatestCatchChum   = latestCatchChum,
-            WithoutSnagging   = !snagging,
+            LatestCatch = latestCatch,
+            LatestCatchChum = latestCatchChum,
+            WithoutSnagging = !snagging,
         };
         for (var i = firstBaitOffset; i < closeBracketOffset; ++i)
         {

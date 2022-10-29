@@ -4,7 +4,7 @@ using System.Linq;
 using GatherBuddy.Classes;
 using GatherBuddy.Structs;
 using GatherBuddy.Time;
-
+using Dalamud.Logging;
 namespace GatherBuddy.Weather;
 
 public partial class WeatherManager
@@ -14,14 +14,14 @@ public partial class WeatherManager
 
     private static byte CalculateTarget(TimeStamp timestamp)
     {
-        var seconds     = timestamp.TotalSeconds;
-        var hour        = seconds / EorzeaTimeStampExtensions.SecondsPerEorzeaHour;
+        var seconds = timestamp.TotalSeconds;
+        var hour = seconds / EorzeaTimeStampExtensions.SecondsPerEorzeaHour;
         var shiftedHour = (uint)(hour + 8 - hour % 8) % RealTime.HoursPerDay;
-        var day         = seconds / EorzeaTimeStampExtensions.SecondsPerEorzeaDay;
+        var day = seconds / EorzeaTimeStampExtensions.SecondsPerEorzeaDay;
 
         var ret = (uint)day * 100 + shiftedHour;
-        ret =  (ret << 11) ^ ret;
-        ret =  (ret >> 8) ^ ret;
+        ret = (ret << 11) ^ ret;
+        ret = (ret >> 8) ^ ret;
         ret %= 100;
         return (byte)ret;
     }
@@ -36,7 +36,7 @@ public partial class WeatherManager
         }
 
 #if DEBUG
-        GatherBuddy.Log.Warning($"Should never be reached, weather rates not adding up to 100. {rates.Rates.Last().CumulativeRate}");
+        PluginLog.Warning($"Should never be reached, weather rates not adding up to 100. {rates.Rates.Last().CumulativeRate}");
 #endif
         return rates.Rates[^1].Weather;
     }
@@ -48,18 +48,18 @@ public partial class WeatherManager
 
         if (territory.WeatherRates.Rates.Length == 0)
         {
-            GatherBuddy.Log.Error($"Trying to get forecast for territory {territory.Id} which has no weather rates.");
+            PluginLog.Error($"Trying to get forecast for territory {territory.Id} which has no weather rates.");
             return Array.Empty<WeatherListing>();
         }
 
-        var ret  = new WeatherListing[amount];
+        var ret = new WeatherListing[amount];
         var root = GetRootTime(timestamp);
         for (var i = 0; i < amount; ++i)
         {
-            var target  = CalculateTarget(root);
+            var target = CalculateTarget(root);
             var weather = GetWeather(target, territory.WeatherRates);
-            ret[i] =  new WeatherListing(weather, root);
-            root   += EorzeaTimeStampExtensions.MillisecondsPerEorzeaWeather;
+            ret[i] = new WeatherListing(weather, root);
+            root += EorzeaTimeStampExtensions.MillisecondsPerEorzeaWeather;
         }
 
         return ret;

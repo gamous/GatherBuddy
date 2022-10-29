@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Dalamud.Game;
+using Dalamud.Logging;
 using GatherBuddy.Classes;
 using GatherBuddy.Interfaces;
 using GatherBuddy.Plugin;
@@ -16,13 +17,13 @@ namespace GatherBuddy.Alarms;
 
 public partial class AlarmManager : IDisposable
 {
-    private const    string    FileName = "alarms.json";
+    private const string FileName = "alarms.json";
     private readonly PlaySound _sounds;
 
-    public   List<AlarmGroup>                  Alarms        { get; init; } = new();
-    internal List<(Alarm, TimeStamp)>          ActiveAlarms  { get; init; } = new();
-    public   (Alarm, ILocation, TimeInterval)? LastItemAlarm { get; private set; }
-    public   (Alarm, ILocation, TimeInterval)? LastFishAlarm { get; private set; }
+    public List<AlarmGroup> Alarms { get; init; } = new();
+    internal List<(Alarm, TimeStamp)> ActiveAlarms { get; init; } = new();
+    public (Alarm, ILocation, TimeInterval)? LastItemAlarm { get; private set; }
+    public (Alarm, ILocation, TimeInterval)? LastFishAlarm { get; private set; }
 
     internal bool Dirty = true;
 
@@ -118,7 +119,7 @@ public partial class AlarmManager : IDisposable
         GatherBuddy.Config.Save();
 
         SetActiveAlarms();
-        Dalamud.Framework.Update  += OnUpdate;
+        Dalamud.Framework.Update += OnUpdate;
         Dalamud.ClientState.Login += OnLogin;
     }
 
@@ -128,7 +129,7 @@ public partial class AlarmManager : IDisposable
         {
             SetActiveAlarms();
             Dalamud.ClientState.Login -= OnLogin;
-            Dalamud.Framework.Update  += OnUpdate;
+            Dalamud.Framework.Update += OnUpdate;
         }
     }
 
@@ -178,8 +179,8 @@ public partial class AlarmManager : IDisposable
         return alarm.PreferLocation switch
         {
             GatheringNode node => (node, node.Times.NextUptime(GatherBuddy.Time.ServerTime)),
-            FishingSpot spot   => (spot, GatherBuddy.UptimeManager.NextUptime((Fish)alarm.Item, spot.Territory, GatherBuddy.Time.ServerTime)),
-            _                  => (alarm.PreferLocation, TimeInterval.Never),
+            FishingSpot spot => (spot, GatherBuddy.UptimeManager.NextUptime((Fish)alarm.Item, spot.Territory, GatherBuddy.Time.ServerTime)),
+            _ => (alarm.PreferLocation, TimeInterval.Never),
         };
     }
 
@@ -191,8 +192,8 @@ public partial class AlarmManager : IDisposable
         return alarm.PreferLocation switch
         {
             GatheringNode node => (node, node.Times.NextUptime(now)),
-            FishingSpot spot   => (spot, GatherBuddy.UptimeManager.NextUptime((Fish)alarm.Item, spot.Territory, now)),
-            _                  => (alarm.PreferLocation, TimeInterval.Never),
+            FishingSpot spot => (spot, GatherBuddy.UptimeManager.NextUptime((Fish)alarm.Item, spot.Territory, now)),
+            _ => (alarm.PreferLocation, TimeInterval.Never),
         };
     }
 
@@ -241,11 +242,11 @@ public partial class AlarmManager : IDisposable
         while (newStart <= st)
         {
             (var _, newUptime) = GetUptime(alarm, newUptime.End + 1);
-            newStart           = newUptime.Start.AddSeconds(-alarm.SecondOffset);
+            newStart = newUptime.Start.AddSeconds(-alarm.SecondOffset);
         }
 
         ActiveAlarms[0] = (alarm, newStart);
-        Dirty           = true;
+        Dirty = true;
     }
 
     public void Save()
@@ -261,14 +262,14 @@ public partial class AlarmManager : IDisposable
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Could not write gather groups to file {file.FullName}:\n{e}");
+            PluginLog.Error($"Could not write gather groups to file {file.FullName}:\n{e}");
         }
     }
 
     public static AlarmManager Load()
     {
         var manager = new AlarmManager();
-        var file    = Functions.ObtainSaveFile(FileName);
+        var file = Functions.ObtainSaveFile(FileName);
         if (file is not { Exists: true })
         {
             manager.Save();
@@ -277,22 +278,22 @@ public partial class AlarmManager : IDisposable
 
         try
         {
-            var text    = File.ReadAllText(file.FullName);
-            var data    = JsonConvert.DeserializeObject<AlarmGroup.Config[]>(text)!;
+            var text = File.ReadAllText(file.FullName);
+            var data = JsonConvert.DeserializeObject<AlarmGroup.Config[]>(text)!;
             var changes = false;
             foreach (var alarmGroup in data)
             {
                 var group = new AlarmGroup()
                 {
-                    Name        = alarmGroup.Name,
+                    Name = alarmGroup.Name,
                     Description = alarmGroup.Description,
-                    Enabled     = alarmGroup.Enabled,
+                    Enabled = alarmGroup.Enabled,
                 };
                 foreach (var item in alarmGroup.Alarms)
                 {
                     if (!Alarm.FromConfig(item, out var alarm))
                     {
-                        GatherBuddy.Log.Error($"Could not add alarm to {group.Name}.");
+                        PluginLog.Error($"Could not add alarm to {group.Name}.");
                         changes = true;
                         continue;
                     }
@@ -308,7 +309,7 @@ public partial class AlarmManager : IDisposable
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Error loading gather groups:\n{e}");
+            PluginLog.Error($"Error loading gather groups:\n{e}");
             manager.Save();
         }
 

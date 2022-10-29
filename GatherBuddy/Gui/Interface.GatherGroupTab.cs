@@ -16,21 +16,21 @@ using GatherBuddy.GatherHelper;
 using GatherBuddy.Plugin;
 using OtterGui.Widgets;
 using ImRaii = OtterGui.Raii.ImRaii;
-
+using Dalamud.Logging;
 namespace GatherBuddy.Gui;
 
 public partial class Interface
 {
     private class GatherGroupDragDropData
     {
-        public TimedGroup     Group;
+        public TimedGroup Group;
         public TimedGroupNode Node;
-        public int            NodeIdx;
+        public int NodeIdx;
 
         public GatherGroupDragDropData(TimedGroup group, TimedGroupNode node, int idx)
         {
-            Group   = group;
-            Node    = node;
+            Group = group;
+            Node = node;
             NodeIdx = idx;
         }
     }
@@ -96,7 +96,7 @@ public partial class Interface
                 if (!_plugin.GatherGroupManager.ChangeGroupNode(@group, @group.Nodes.Count, d.Node.Item, d.Node.EorzeaStartMinute,
                         d.Node.EorzeaEndMinute, d.Node.Annotation, false))
                 {
-                    GatherBuddy.Log.Error($"Could not move node from group {d.Group.Name} to group {group.Name}.");
+                    PluginLog.Error($"Could not move node from group {d.Group.Name} to group {group.Name}.");
                     return;
                 }
 
@@ -118,15 +118,15 @@ public partial class Interface
 
         public readonly GatherGroupSelector Selector;
 
-        public bool NameEdit          = false;
-        public bool DescriptionEdit   = false;
-        public int  AnnotationEditIdx = -1;
+        public bool NameEdit = false;
+        public bool DescriptionEdit = false;
+        public int AnnotationEditIdx = -1;
 
         public readonly string DefaultGroupTooltip;
-        public          int    NewItemIdx = 0;
+        public int NewItemIdx = 0;
 
-        private          bool        _itemPerMinuteDirty = true;
-        private readonly List<short> _itemPerMinute      = new(24);
+        private bool _itemPerMinuteDirty = true;
+        private readonly List<short> _itemPerMinute = new(24);
 
         public void SetDirty()
             => _itemPerMinuteDirty = true;
@@ -170,13 +170,13 @@ public partial class Interface
 
     private void DrawTimeInput(string label, float width, int value, Action<int> setter)
     {
-        var       hour   = value / RealTime.MinutesPerHour;
-        var       minute = value % RealTime.MinutesPerHour;
-        using var group  = ImRaii.Group();
-        using var id     = ImRaii.PushId(label);
+        var hour = value / RealTime.MinutesPerHour;
+        var minute = value % RealTime.MinutesPerHour;
+        using var group = ImRaii.Group();
+        using var id = ImRaii.PushId(label);
         ImGui.SetNextItemWidth(width);
-        using var style  = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.One * 2 * ImGuiHelpers.GlobalScale);
-        var       change = ImGui.DragInt("##小时", ref hour, 0.05f, 0, RealTime.HoursPerDay - 1, "%02d", ImGuiSliderFlags.AlwaysClamp);
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.One * 2 * ImGuiHelpers.GlobalScale);
+        var change = ImGui.DragInt("##小时", ref hour, 0.05f, 0, RealTime.HoursPerDay - 1, "%02d", ImGuiSliderFlags.AlwaysClamp);
         ImGui.SameLine();
         ImGui.Text(":");
         ImGui.SameLine();
@@ -194,7 +194,7 @@ public partial class Interface
 
     private void DrawTimeInput(int fromValue, int toValue, Action<int, int> setter)
     {
-        var       width = 20 * ImGuiHelpers.GlobalScale;
+        var width = 20 * ImGuiHelpers.GlobalScale;
         using var group = ImRaii.Group();
 
         ImGui.Text(" 从 ");
@@ -228,10 +228,10 @@ public partial class Interface
 
     private void DrawGatherGroupNode(TimedGroup group, ref int idx, int minutes)
     {
-        var       node           = group.Nodes[idx];
-        using var id             = ImRaii.PushId(idx);
-        var       i              = idx;
-        var       annotationEdit = _gatherGroupCache.AnnotationEditIdx;
+        var node = group.Nodes[idx];
+        using var id = ImRaii.PushId(idx);
+        var i = idx;
+        var annotationEdit = _gatherGroupCache.AnnotationEditIdx;
         ImGui.TableNextColumn();
         if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), IconButtonSize, "删除该项", false, true))
             if (_plugin.GatherGroupManager.ChangeGroupNode(group, i, null, null, null, null, true))
@@ -405,8 +405,8 @@ public partial class Interface
             _plugin.AlarmManager.AddGroup(preset);
         }
 
-        var       holdingCtrl = ImGui.GetIO().KeyCtrl;
-        using var color       = ImRaii.PushColor(ImGuiCol.ButtonHovered, 0x8000A000, holdingCtrl);
+        var holdingCtrl = ImGui.GetIO().KeyCtrl;
+        using var color = ImRaii.PushColor(ImGuiCol.ButtonHovered, 0x8000A000, holdingCtrl);
         if (ImGui.Button("恢复默认采集组") && holdingCtrl && _plugin.GatherGroupManager.SetDefaults(true))
         {
             _gatherGroupCache.Selector.TryRestoreCurrent();
@@ -425,7 +425,7 @@ public partial class Interface
 
     private void DrawGatherGroupTab()
     {
-        using var id  = ImRaii.PushId("Gather Groups");
+        using var id = ImRaii.PushId("Gather Groups");
         using var tab = ImRaii.TabItem("采集组");
 
         ImGuiUtil.HoverTooltip(

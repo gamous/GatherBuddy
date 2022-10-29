@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-
+using Dalamud.Logging;
 namespace GatherBuddy.FishTimer;
 
 public partial class FishRecorder : IDisposable
 {
-    public readonly List<FishRecord>                  Records = new();
-    public readonly Dictionary<uint, FishRecordTimes> Times   = new();
+    public readonly List<FishRecord> Records = new();
+    public readonly Dictionary<uint, FishRecordTimes> Times = new();
 
     public FishRecorder()
     {
@@ -20,7 +20,7 @@ public partial class FishRecorder : IDisposable
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Could not create fish record directory {FishRecordDirectory.FullName}:\n{e}");
+            PluginLog.Error($"Could not create fish record directory {FishRecordDirectory.FullName}:\n{e}");
         }
 
         if (Directory.Exists(FishRecordDirectory.FullName))
@@ -80,7 +80,7 @@ public partial class FishRecorder : IDisposable
 
         if (!Times.TryGetValue(record.Catch.ItemId, out var times))
         {
-            times                      = new FishRecordTimes();
+            times = new FishRecordTimes();
             Times[record.Catch.ItemId] = times;
         }
 
@@ -111,7 +111,7 @@ public partial class FishRecorder : IDisposable
 
         if (!Times.TryGetValue(record.Catch!.ItemId, out var data) || !data.Data.TryGetValue(record.Bait.Id, out var times))
         {
-            GatherBuddy.Log.Error("Invalid state in fish records.");
+            PluginLog.Error("Invalid state in fish records.");
             return;
         }
 

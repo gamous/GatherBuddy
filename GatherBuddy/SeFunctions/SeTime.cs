@@ -2,7 +2,7 @@
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using GatherBuddy.Time;
 using Action = System.Action;
-
+using Dalamud.Logging;
 namespace GatherBuddy.SeFunctions;
 
 public class SeTime
@@ -10,13 +10,13 @@ public class SeTime
     private static TimeStamp GetServerTime()
         => new(Framework.GetServerTime() * 1000);
 
-    public TimeStamp ServerTime         { get; private set; }
-    public TimeStamp EorzeaTime         { get; private set; }
-    public long      EorzeaTotalMinute  { get; private set; }
-    public long      EorzeaTotalHour    { get; private set; }
-    public short     EorzeaMinuteOfDay  { get; private set; }
-    public byte      EorzeaHourOfDay    { get; private set; }
-    public byte      EorzeaMinuteOfHour { get; private set; }
+    public TimeStamp ServerTime { get; private set; }
+    public TimeStamp EorzeaTime { get; private set; }
+    public long EorzeaTotalMinute { get; private set; }
+    public long EorzeaTotalHour { get; private set; }
+    public short EorzeaMinuteOfDay { get; private set; }
+    public byte EorzeaHourOfDay { get; private set; }
+    public byte EorzeaMinuteOfHour { get; private set; }
 
     public event Action? Updated;
     public event Action? HourChanged;
@@ -49,8 +49,8 @@ public class SeTime
         var minute = EorzeaTime.TotalMinutes;
         if (minute != EorzeaTotalMinute)
         {
-            EorzeaTotalMinute  = minute;
-            EorzeaMinuteOfDay  = (short)(EorzeaTotalMinute % RealTime.MinutesPerDay);
+            EorzeaTotalMinute = minute;
+            EorzeaMinuteOfDay = (short)(EorzeaTotalMinute % RealTime.MinutesPerDay);
             EorzeaMinuteOfHour = (byte)(EorzeaMinuteOfDay % RealTime.MinutesPerHour);
         }
 
@@ -64,12 +64,12 @@ public class SeTime
             HourChanged?.Invoke();
             if ((EorzeaHourOfDay & 0b111) == 0)
             {
-                GatherBuddy.Log.Verbose($"Eorzea Hour and Weather Change triggered. {(long)ServerTime} {(long)EorzeaTime}");
+                PluginLog.Verbose($"Eorzea Hour and Weather Change triggered. {(long)ServerTime} {(long)EorzeaTime}");
                 WeatherChanged?.Invoke();
             }
             else
             {
-                GatherBuddy.Log.Verbose($"Eorzea Hour Change triggered. {(long)ServerTime} {(long)EorzeaTime}");
+                PluginLog.Verbose($"Eorzea Hour Change triggered. {(long)ServerTime} {(long)EorzeaTime}");
             }
         }
 

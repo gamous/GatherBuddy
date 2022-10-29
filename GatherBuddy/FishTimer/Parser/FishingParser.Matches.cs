@@ -2,7 +2,7 @@
 using Dalamud;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
-
+using Dalamud.Logging;
 namespace GatherBuddy.FishTimer.Parser;
 
 public partial class FishingParser
@@ -22,7 +22,7 @@ public partial class FishingParser
               && FishingSpotNames.TryGetValue(fishingSpotName[4..], out fishingSpot))
             BeganFishing?.Invoke(fishingSpot);
         else
-            GatherBuddy.Log.Error($"Began fishing at unknown fishing spot: \"{fishingSpotName}\".");
+            PluginLog.Error($"Began fishing at unknown fishing spot: \"{fishingSpotName}\".");
     }
 
     private void HandleSpotDiscoveredMatch(Match match)
@@ -36,7 +36,7 @@ public partial class FishingParser
               && FishingSpotNames.TryGetValue(fishingSpotName[4..], out fishingSpot))
             IdentifiedSpot?.Invoke(fishingSpot);
         else
-            GatherBuddy.Log.Error($"Discovered unknown fishing spot: \"{fishingSpotName}\".");
+            PluginLog.Error($"Discovered unknown fishing spot: \"{fishingSpotName}\".");
     }
 
     private const XivChatType FishingMessage = (XivChatType)2243;
@@ -47,34 +47,34 @@ public partial class FishingParser
         switch (type)
         {
             case FishingMessage:
-            {
-                var text = message.TextValue;
-
-                if (text.Contains(_regexes.Undiscovered))
                 {
-                    BeganFishing?.Invoke(null);
-                    return;
-                }
+                    var text = message.TextValue;
 
-                var match = _regexes.Cast.Match(text);
-                if (match.Success)
-                {
-                    HandleCastMatch(match);
-                    return;
-                }
+                    if (text.Contains(_regexes.Undiscovered))
+                    {
+                        BeganFishing?.Invoke(null);
+                        return;
+                    }
 
-                match = _regexes.Mooch.Match(text);
-                if (match.Success)
-                {
-                    BeganMooching?.Invoke();
-                    return;
-                }
+                    var match = _regexes.Cast.Match(text);
+                    if (match.Success)
+                    {
+                        HandleCastMatch(match);
+                        return;
+                    }
 
-                match = _regexes.AreaDiscovered.Match(text);
-                if (match.Success)
-                    HandleSpotDiscoveredMatch(match);
-                break;
-            }
+                    match = _regexes.Mooch.Match(text);
+                    if (match.Success)
+                    {
+                        BeganMooching?.Invoke();
+                        return;
+                    }
+
+                    match = _regexes.AreaDiscovered.Match(text);
+                    if (match.Success)
+                        HandleSpotDiscoveredMatch(match);
+                    break;
+                }
         }
     }
 }

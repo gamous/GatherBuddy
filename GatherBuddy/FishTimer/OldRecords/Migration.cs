@@ -5,7 +5,7 @@ using System.Linq;
 using GatherBuddy.Enums;
 using GatherBuddy.Plugin;
 using GatherBuddy.Structs;
-
+using Dalamud.Logging;
 namespace GatherBuddy.FishTimer.OldRecords;
 
 public static class Migration
@@ -36,16 +36,16 @@ public static class Migration
 
         var record = new FishRecord
         {
-            Amount        = 1,
-            TimeStamp     = GatherBuddy.Time.ServerTime,
-            Bait          = bait,
-            Catch         = fish,
+            Amount = 1,
+            TimeStamp = GatherBuddy.Time.ServerTime,
+            Bait = bait,
+            Catch = fish,
             ContentIdHash = 0,
-            FishingSpot   = null,
-            Gathering     = 0,
-            Perception    = 0,
-            Size          = 0,
-            Flags         = flags,
+            FishingSpot = null,
+            Gathering = 0,
+            Perception = 0,
+            Size = 0,
+            Flags = flags,
         };
         record.SetTugHook(fish.BiteType, HookSet.Hook);
 
@@ -72,7 +72,7 @@ public static class Migration
 
         try
         {
-            var text       = File.ReadAllLines(file.FullName);
+            var text = File.ReadAllLines(file.FullName);
             file.MoveTo(file.FullName + ".backup", true);
             var newRecords = new List<FishRecord>(4 * text.Length);
             foreach (var line in text)
@@ -86,7 +86,7 @@ public static class Migration
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Could not read old fishing records from file {file.FullName}:\n{e}");
+            PluginLog.Error($"Could not read old fishing records from file {file.FullName}:\n{e}");
         }
     }
 }

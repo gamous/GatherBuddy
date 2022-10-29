@@ -7,6 +7,7 @@ using GatherBuddy.Interfaces;
 using GatherBuddy.Plugin;
 using Newtonsoft.Json;
 using OtterGui;
+using Dalamud.Logging;
 using Functions = GatherBuddy.Plugin.Functions;
 
 namespace GatherBuddy.GatherHelper;
@@ -21,11 +22,11 @@ public partial class GatherWindowManager : IDisposable
     public List<IGatherable> SortedItems = new();
 
     private readonly AlarmManager _alarms;
-    private          bool         _sortDirty = true;
+    private bool _sortDirty = true;
 
     public GatherWindowManager(AlarmManager alarms)
     {
-        _alarms                                =  alarms;
+        _alarms = alarms;
         GatherBuddy.UptimeManager.UptimeChange += OnUptimeChange;
         SetShowGatherWindowAlarms(GatherBuddy.Config.ShowGatherWindowAlarms);
     }
@@ -89,13 +90,13 @@ public partial class GatherWindowManager : IDisposable
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Error serializing gather window data:\n{e}");
+            PluginLog.Error($"Error serializing gather window data:\n{e}");
         }
     }
 
     public static GatherWindowManager Load(AlarmManager alarms)
     {
-        var ret  = new GatherWindowManager(alarms);
+        var ret = new GatherWindowManager(alarms);
         var file = Functions.ObtainSaveFile(FileName);
         if (file is not { Exists: true })
         {
@@ -120,7 +121,7 @@ public partial class GatherWindowManager : IDisposable
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Error deserializing gather window data:\n{e}");
+            PluginLog.Error($"Error deserializing gather window data:\n{e}");
             ret.Save();
         }
 

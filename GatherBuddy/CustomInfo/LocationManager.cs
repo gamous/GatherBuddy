@@ -7,7 +7,7 @@ using GatherBuddy.Classes;
 using GatherBuddy.Interfaces;
 using GatherBuddy.Plugin;
 using Newtonsoft.Json;
-
+using Dalamud.Logging;
 namespace GatherBuddy.CustomInfo;
 
 public class LocationManager
@@ -75,14 +75,14 @@ public class LocationManager
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Could not write custom locations to file {file.FullName}:\n{e}");
+            PluginLog.Error($"Could not write custom locations to file {file.FullName}:\n{e}");
         }
     }
 
     public static LocationManager Load()
     {
-        var             file = Functions.ObtainSaveFile(FileName);
-        LocationManager ret  = new();
+        var file = Functions.ObtainSaveFile(FileName);
+        LocationManager ret = new();
         if (file is not { Exists: true })
         {
             ret.Save();
@@ -92,18 +92,18 @@ public class LocationManager
         try
         {
             var changes = false;
-            var text    = File.ReadAllText(file.FullName);
+            var text = File.ReadAllText(file.FullName);
             foreach (var location in JsonConvert.DeserializeObject<LocationData[]>(text)!)
             {
                 ILocation? loc = location.Type switch
                 {
                     ObjectType.Gatherable => GatherBuddy.GameData.GatheringNodes.TryGetValue(location.Id, out var l) ? l : null,
-                    ObjectType.Fish       => GatherBuddy.GameData.FishingSpots.TryGetValue(location.Id, out var l) ? l : null,
-                    _                     => null,
+                    ObjectType.Fish => GatherBuddy.GameData.FishingSpots.TryGetValue(location.Id, out var l) ? l : null,
+                    _ => null,
                 };
                 if (loc == null)
                 {
-                    GatherBuddy.Log.Error($"Invalid custom location {location.Id} of type {location.Type}, skipped.");
+                    PluginLog.Error($"Invalid custom location {location.Id} of type {location.Type}, skipped.");
                     changes = true;
                     continue;
                 }
@@ -113,7 +113,7 @@ public class LocationManager
                 if (location.AetheryteId != -1)
                     if (!GatherBuddy.GameData.Aetherytes.TryGetValue((uint)location.AetheryteId, out aetheryte))
                     {
-                        GatherBuddy.Log.Error($"Invalid aetheryte id {location.AetheryteId} in custom location for {loc.Name}.");
+                        PluginLog.Error($"Invalid aetheryte id {location.AetheryteId} in custom location for {loc.Name}.");
                         changes = true;
                         continue;
                     }
@@ -130,7 +130,7 @@ public class LocationManager
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Error loading custom infos:\n{e}");
+            PluginLog.Error($"Error loading custom infos:\n{e}");
         }
 
         return ret;

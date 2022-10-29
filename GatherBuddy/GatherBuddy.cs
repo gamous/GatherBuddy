@@ -7,6 +7,8 @@ using System.Reflection;
 using Dalamud;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
+using Dalamud.Logging;
+using Dalamud.IoC;
 using GatherBuddy.Alarms;
 using GatherBuddy.Config;
 using GatherBuddy.CustomInfo;
@@ -18,7 +20,8 @@ using GatherBuddy.SeFunctions;
 using GatherBuddy.Spearfishing;
 using GatherBuddy.Weather;
 using OtterGui.Classes;
-using OtterGui.Log;
+using Lumina.Excel.GeneratedSheets;
+//using OtterGui.Log;
 
 namespace GatherBuddy;
 
@@ -33,8 +36,8 @@ public partial class GatherBuddy : IDalamudPlugin
 
     public static Configuration  Config   { get; private set; } = null!;
     public static GameData       GameData { get; private set; } = null!;
-    public static Logger         Log      { get; private set; } = null!;
-    public static ClientLanguage Language { get; private set; } = ClientLanguage.ChineseSimplified];
+    //public static Logger         Log      { get; private set; } = null!;
+    public static ClientLanguage Language { get; private set; } = ClientLanguage.ChineseSimplified;
     public static SeTime         Time     { get; private set; } = null!;
 #if DEBUG
     public static bool DebugMode { get; private set; } = true;
@@ -67,13 +70,13 @@ public partial class GatherBuddy : IDalamudPlugin
 
     internal readonly GatherBuddyIpc Ipc;
     //    internal readonly WotsitIpc Wotsit;
-
     public GatherBuddy(DalamudPluginInterface pluginInterface)
     {
+
         try
         {
             Dalamud.Initialize(pluginInterface);
-            Log     = new Logger();
+            
             Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
             Backup.CreateBackup(pluginInterface.ConfigDirectory, GatherBuddyBackupFiles());
             Config         = Configuration.Load();

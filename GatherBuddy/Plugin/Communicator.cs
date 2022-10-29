@@ -6,6 +6,7 @@ using Dalamud;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using Dalamud.Logging;
 using GatherBuddy.Alarms;
 using GatherBuddy.Classes;
 using GatherBuddy.Config;
@@ -122,7 +123,7 @@ public static class Communicator
         if (e != null)
         {
             name = name.Length > 0 ? name : "<未命名>";
-            GatherBuddy.Log.Error($"Could not save {objectType}{name} to Clipboard:\n{e}");
+            PluginLog.Error($"Could not save {objectType}{name} to Clipboard:\n{e}");
             PrintError($"未能保存 {objectType}", name, GatherBuddy.Config.SeColorNames, " 到粘贴板。");
         }
         else if (GatherBuddy.Config.PrintClipboardMessages)
@@ -189,20 +190,20 @@ public static class Communicator
         if (item == null)
         {
             Print("未能找到名为 \"", name, GatherBuddy.Config.SeColorNames, "\" 的采集目标。");
-            GatherBuddy.Log.Verbose($"Could not find item corresponding to \"{name}\".");
+            PluginLog.Verbose($"Could not find item corresponding to \"{name}\".");
             return;
         }
 
         if (GatherBuddy.Config.IdentifiedGatherableFormat.Length > 0)
             Print(FormatIdentifiedItemMessage(GatherBuddy.Config.IdentifiedGatherableFormat, name, item));
-        GatherBuddy.Log.Verbose(Configuration.DefaultIdentifiedGatherableFormat, item.ItemId, item.Name[ClientLanguage.ChineseSimplified]], name);
+        PluginLog.Verbose(Configuration.DefaultIdentifiedGatherableFormat, item.ItemId, item.Name[ClientLanguage.ChineseSimplified], name);
     }
 
     public static void PrintAlarmMessage(Alarm alarm, ILocation location, TimeInterval uptime)
     {
         if (GatherBuddy.Config.AlarmFormat.Length > 0)
             Print(FormatAlarmMessage(GatherBuddy.Config.AlarmFormat, alarm, location, uptime));
-        GatherBuddy.Log.Verbose(Configuration.DefaultAlarmFormat, alarm.Name, alarm.Item.Name[ClientLanguage.ChineseSimplified]], string.Empty,
+        PluginLog.Verbose(Configuration.DefaultAlarmFormat, alarm.Name, alarm.Item.Name[ClientLanguage.ChineseSimplified], string.Empty,
             location.Name); // Duration string too ugly.
     }
 
@@ -221,7 +222,7 @@ public static class Communicator
                 .AddColoredText(type.Value.ToString(), GatherBuddy.Config.SeColorArguments);
         sb.AddText(".");
         Print(sb.BuiltString);
-        GatherBuddy.Log.Verbose(sb.BuiltString.TextValue);
+        PluginLog.Verbose(sb.BuiltString.TextValue);
     }
 
     public static void NoItemName(string command, string itemType)

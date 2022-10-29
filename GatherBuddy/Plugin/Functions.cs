@@ -7,7 +7,7 @@ using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Keys;
 using Lumina.Excel.GeneratedSheets;
 using OtterGui.Classes;
-
+using Dalamud.Logging;
 namespace GatherBuddy.Plugin;
 
 public static class Functions
@@ -36,7 +36,7 @@ public static class Functions
         }
         catch (Exception e)
         {
-            GatherBuddy.Log.Error($"Could not create save directory at {dir.FullName}:\n{e}");
+            PluginLog.Error($"Could not create save directory at {dir.FullName}:\n{e}");
             return null;
         }
 
@@ -58,7 +58,7 @@ public static class Functions
             return true;
         }
 
-        if (!CompareCi(text,       "on") && !CompareCi(text, "true"))
+        if (!CompareCi(text, "on") && !CompareCi(text, "true"))
             return CompareCi(text, "off") || CompareCi(text, "false");
 
         parsed = true;
@@ -98,10 +98,10 @@ public static class Functions
 
     public static byte[] DecompressedBase64(string compressedBase64)
     {
-        var       data             = Convert.FromBase64String(compressedBase64);
+        var data = Convert.FromBase64String(compressedBase64);
         using var compressedStream = new MemoryStream(data);
-        using var zipStream        = new GZipStream(compressedStream, CompressionMode.Decompress);
-        using var resultStream     = new MemoryStream();
+        using var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+        using var resultStream = new MemoryStream();
         zipStream.CopyTo(resultStream);
         return resultStream.ToArray();
     }
@@ -146,10 +146,10 @@ public static class Functions
         => key.Modifier switch
         {
             VirtualKey.CONTROL => Dalamud.Keys[VirtualKey.CONTROL],
-            VirtualKey.SHIFT   => Dalamud.Keys[VirtualKey.SHIFT],
-            VirtualKey.MENU    => Dalamud.Keys[VirtualKey.MENU],
-            VirtualKey.NO_KEY  => noKey,
-            _                  => false,
+            VirtualKey.SHIFT => Dalamud.Keys[VirtualKey.SHIFT],
+            VirtualKey.MENU => Dalamud.Keys[VirtualKey.MENU],
+            VirtualKey.NO_KEY => noKey,
+            _ => false,
         };
 
     public static bool CheckKeyState(ModifiableHotkey key, bool noKey)
