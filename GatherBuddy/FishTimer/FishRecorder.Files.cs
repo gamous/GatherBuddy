@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Dalamud.Logging;
 using GatherBuddy.Plugin;
 using Newtonsoft.Json;
 
@@ -11,54 +10,29 @@ namespace GatherBuddy.FishTimer;
 
 public partial class FishRecorder
 {
-    public const string        FishRecordFileFormat = "fish_records_{0:D6}.dat";
-    public       DirectoryInfo FishRecordDirectory;
+    public const    string        FishRecordFileName = "fish_records.dat";
+    public readonly DirectoryInfo FishRecordDirectory;
 
-    public const int RecordsPerFile = 100;
+    public int Changes = 0;
 
-    public void WriteFile(FileInfo file, int from, int amount)
+    public void WriteFile()
     {
-        Debug.Assert(from >= 0);
-        amount = Math.Min(amount, Records.Count - from);
-        
+        var file = new FileInfo(Path.Combine(FishRecordDirectory.FullName, FishRecordFileName));
         try
         {
-            if (amount == 0)
-            {
-                file.Delete();
-            }
-            else
-            {
-                var bytes = GetRecordBytes(from, amount);
-                File.WriteAllBytes(file.FullName, bytes);
-            }
+            var bytes = GetRecordBytes();
+            File.WriteAllBytes(file.FullName, bytes);
+            Changes = 0;
         }
         catch (Exception e)
         {
-            PluginLog.Error($"Could not write fish record file {file.FullName}:\n{e}");
+            GatherBuddy.Log.Error($"Could not write fish record file {file.FullName}:\n{e}");
         }
     }
 
-    public void WriteAllFiles(int idx = 0)
+    public string ExportBase64()
     {
-        var start    = idx / RecordsPerFile;
-        var numFiles = Records.Count / RecordsPerFile + 1;
-        for (var i = start; i < numFiles; ++i)
-        {
-            var name = string.Format(FishRecordFileFormat, i);
-            var file = new FileInfo(Path.Combine(FishRecordDirectory.FullName, name));
-            WriteFile(file, i * RecordsPerFile, RecordsPerFile);
-        }
-    }
-
-
-    public void WriteFullFile(FileInfo file)
-        => WriteFile(file, 0, Records.Count);
-
-    public string ExportBase64(int from, int amount)
-    {
-        amount = Math.Min(amount, Records.Count - from);
-        var bytes = GetRecordBytes(from, amount);
+        var bytes = GetRecordBytes();
         return Functions.CompressedBase64(bytes);
     }
 
@@ -68,11 +42,11 @@ public partial class FishRecorder
         {
             var data = JsonConvert.SerializeObject(Records.Select(r => r.ToJson()), Formatting.Indented);
             File.WriteAllText(file.FullName, data);
-            PluginLog.Information($"Exported {Records.Count} fish records to {file.FullName}.");
+            GatherBuddy.Log.Information($"Exported {Records.Count} fish records to {file.FullName}.");
         }
         catch (Exception e)
         {
-            PluginLog.Warning($"Could not export json file to {file.FullName}:\n{e}");
+            GatherBuddy.Log.Warning($"Could not export json file to {file.FullName}:\n{e}");
         }
     }
 
@@ -86,32 +60,17 @@ public partial class FishRecorder
         }
         catch (Exception e)
         {
-            PluginLog.Warning($"Error while importing fish records:\n{e}");
+            GatherBuddy.Log.Warning($"Error while importing fish records:\n{e}");
         }
-    }
-
-    public void WriteNewestFile()
-    {
-        if (Records.Count == 0)
-            return;
-
-        var newestFile = Records.Count / RecordsPerFile;
-        var name       = string.Format(FishRecordFileFormat, newestFile);
-        var file       = new FileInfo(Path.Combine(FishRecordDirectory.FullName, name));
-        WriteFile(file, newestFile * RecordsPerFile, RecordsPerFile);
     }
 
     public void MergeRecordsIn(IReadOnlyList<FishRecord> newRecords)
     {
         foreach (var record in newRecords.Where(CheckSimilarity))
-        {
             AddUnchecked(record);
-            if (Records.Count % RecordsPerFile == RecordsPerFile - 1)
-                WriteNewestFile();
-        }
 
-        if (Records.Count % RecordsPerFile != RecordsPerFile - 1)
-            WriteNewestFile();
+        if (Changes > 0)
+            WriteFile();
     }
 
     public static List<FishRecord> ReadFile(FileInfo file)
@@ -126,18 +85,18 @@ public partial class FishRecorder
         }
         catch (Exception e)
         {
-            PluginLog.Error($"Unknown error reading fish record file {file.FullName}:\n{e}");
+            GatherBuddy.Log.Error($"Unknown error reading fish record file {file.FullName}:\n{e}");
             return new List<FishRecord>();
         }
     }
 
-    private byte[] GetRecordBytes(int from, int amount)
+    private byte[] GetRecordBytes()
     {
-        var bytes = new byte[amount * FishRecord.ByteLength + 1];
+        var bytes = new byte[Records.Count * FishRecord.ByteLength + 1];
         bytes[0] = FishRecord.Version;
-        for (var i = 0; i < amount; ++i)
+        for (var i = 0; i < Records.Count; ++i)
         {
-            var record = Records[from + i];
+            var record = Records[i];
             var offset = 1 + i * FishRecord.ByteLength;
             record.ToBytes(bytes, offset);
         }
@@ -156,7 +115,7 @@ public partial class FishRecorder
             {
                 if (data.Length % FishRecord.Version1ByteLength != 1)
                 {
-                    PluginLog.Error($"{name} has no valid size for its record version, skipped.\n");
+                    GatherBuddy.Log.Error($"{name} has no valid size for its record version, skipped.\n");
                     return new List<FishRecord>();
                 }
 
@@ -166,7 +125,7 @@ public partial class FishRecorder
                 {
                     if (!FishRecord.FromBytesV1(data, 1 + i * FishRecord.Version1ByteLength, out var record))
                     {
-                        PluginLog.Error($"{name}'s {i}th record is invalid, skipped.\n");
+                        GatherBuddy.Log.Error($"{name}'s {i}th record is invalid, skipped.\n");
                         continue;
                     }
 
@@ -176,16 +135,44 @@ public partial class FishRecorder
                 return ret;
             }
             default:
-                PluginLog.Error($"{name} has no valid record version, skipped.\n");
+                GatherBuddy.Log.Error($"{name} has no valid record version, skipped.\n");
                 return new List<FishRecord>();
         }
     }
 
-    private void ReadAllFiles()
+    private void LoadFile()
+    {
+        var file = new FileInfo(Path.Combine(FishRecordDirectory.FullName, FishRecordFileName));
+        if (!file.Exists)
+            return;
+
+        try
+        {
+            Records.AddRange(ReadFile(file));
+        }
+        catch (Exception e)
+        {
+            GatherBuddy.Log.Error($"Could not read fish record file {file.FullName}:\n{e}");
+        }
+        ResetTimes();
+    }
+
+    private void MigrateOldFiles()
     {
         foreach (var file in FishRecordDirectory.EnumerateFiles("fish_records_*.dat"))
-            Records.AddRange(ReadFile(file));
+        {
+            try
+            {
+                Records.AddRange(ReadFile(file));
+                file.Delete();
+                ++Changes;
+            }
+            catch (Exception e)
+            {
+                GatherBuddy.Log.Error($"Error migrating fish record file {file.FullName}:\n{e}");
+            }
+        }
+
         OldRecords.Migration.MigrateRecords(this);
-        ResetTimes();
     }
 }

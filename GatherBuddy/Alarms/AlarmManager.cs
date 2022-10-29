@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Dalamud.Game;
-using Dalamud.Logging;
 using GatherBuddy.Classes;
 using GatherBuddy.Interfaces;
 using GatherBuddy.Plugin;
 using GatherBuddy.SeFunctions;
 using GatherBuddy.Time;
-using OtterGui.Table;
 using Newtonsoft.Json;
+using OtterGui;
+using Functions = GatherBuddy.Plugin.Functions;
 
 namespace GatherBuddy.Alarms;
 
@@ -261,7 +261,7 @@ public partial class AlarmManager : IDisposable
         }
         catch (Exception e)
         {
-            PluginLog.Error($"Could not write gather groups to file {file.FullName}:\n{e}");
+            GatherBuddy.Log.Error($"Could not write gather groups to file {file.FullName}:\n{e}");
         }
     }
 
@@ -292,7 +292,7 @@ public partial class AlarmManager : IDisposable
                 {
                     if (!Alarm.FromConfig(item, out var alarm))
                     {
-                        PluginLog.Error($"Could not add alarm to {@group.Name}.");
+                        GatherBuddy.Log.Error($"Could not add alarm to {group.Name}.");
                         changes = true;
                         continue;
                     }
@@ -308,7 +308,7 @@ public partial class AlarmManager : IDisposable
         }
         catch (Exception e)
         {
-            PluginLog.Error($"Error loading gather groups:\n{e}");
+            GatherBuddy.Log.Error($"Error loading gather groups:\n{e}");
             manager.Save();
         }
 

@@ -32,7 +32,7 @@ public static partial class Fish
             .Bite      (HookSet.Precise, BiteType.Legendary)
             .Time      (120, 720)
             .Transition(data, 3, 4)
-            .Weather   (data, 2);
+            .Weather   (data, 1, 2);
         data.Apply     (28930, Patch.EchoesOfAFallenStar) // Ondo Sigh
             .Bait      (data, 27590)
             .Bite      (HookSet.Precise, BiteType.Legendary)
@@ -176,7 +176,7 @@ public static partial class Fish
             .Bite      (HookSet.Precise, BiteType.Weak);
         data.Apply     (29754, Patch.EchoesOfAFallenStar) // Fishmonger
             .Bait      (data, 29716)
-            .Bite      (HookSet.Precise, BiteType.Weak);
+            .Bite      (HookSet.Powerful, BiteType.Strong);
         data.Apply     (29755, Patch.EchoesOfAFallenStar) // Mythril Sovereign
             .Bait      (data, 29715)
             .Bite      (HookSet.Powerful, BiteType.Strong);

@@ -530,6 +530,13 @@ public partial class Interface
             return;
 
         _recordTable.Draw(ImGui.GetTextLineHeightWithSpacing());
+
+        var textSize = ImGui.CalcTextSize("00000000") with { Y = 0 };
+        if (_recordTable.CurrentItems != _recordTable.TotalItems)
+            ImGuiUtil.DrawTextButton($"{_recordTable.CurrentItems}", textSize, ImGui.GetColorU32(ImGuiCol.Button), ColorId.AvailableItem.Value());
+        else
+            ImGuiUtil.DrawTextButton($"{_recordTable.CurrentItems}", textSize, ImGui.GetColorU32(ImGuiCol.Button));
+        ImGui.SameLine();
         if (ImGui.Button("清理"))
         {
             _plugin.FishRecorder.RemoveDuplicates();
@@ -545,7 +552,7 @@ public partial class Interface
         try
         {
             if (ImGui.Button("复制到粘贴板"))
-                ImGui.SetClipboardText(_plugin.FishRecorder.ExportBase64(0, _plugin.FishRecorder.Records.Count));
+                ImGui.SetClipboardText(_plugin.FishRecorder.ExportBase64());
             ImGuiUtil.HoverTooltip("导出所有钓鱼记录到粘贴板来分享给你的朋友，这可能非常多。");
         }
         catch
